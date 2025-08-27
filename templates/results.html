@@ -156,12 +156,27 @@
     <p><strong>Please select the main industrial sector of your project or the application domain of the software you build.</strong></p>
   {% elif name == "team_customer_relationship" %}
     <p><strong>How would you rate the relationship between your project’s team and its customer? (1–5)</strong></p>
+    {% elif name == "external_partners" %}
+    <p><strong>Does your project involve external partners?</strong></p>
   {% elif name == "failed_documentation" %}
     <p><strong>Have you ever failed to document one or more requirements?</strong></p>
+  {% elif name == "project_distribution" %}
+    <p><strong>Is your project distributed?</strong></p>
+  {% elif name == "work" %}
+    <p><strong>Do you tend to work from home, on-site, or both?</strong></p>
   {% elif name == "team_communication" %}
     <p><strong>How would you rate the quality of communication inside your team?</strong></p>
+    {% elif name == "project_method" %}
+    <p><strong>How would you personally characterise the way your project works?</strong></p>
+     {% elif name == "country" %}
+    <p><strong>In which country are you personally located?</strong></p>
   {% elif name == "common_problem" %}
     <p><strong>Top 1 Problem (most critical)</strong></p>
+  {% elif name == "user_feedback_frequency" %}
+    <p><strong>How often is user feedback provided?</strong></p>
+
+    {% elif name == "meeting_frequency" %}
+    <p><strong>How often do members of your team meet, informally by chance meeting or in announced meetings?</strong></p>
   {% elif name == "top2" %}
     <p><strong>Top 2 Problem (most critical)</strong></p>
   {% elif name == "top3" %}
