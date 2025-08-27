@@ -1,0 +1,72 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f8fb;
+    color: #333;
+}
+
+.container {
+    max-width: 650px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #005b96;
+    text-align: center;
+}
+
+.survey-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.survey-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 15px;
+}
+
+.survey-form button {
+    padding: 12px;
+    background-color: #005b96;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.survey-form button:hover {
+    background-color: #00497a;
+}
+
+.recommendation-box {
+    background-color: #eaf7ff;
+    border-left: 5px solid #007BFF;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+.recommendation-box h3 {
+    margin-top: 0;
+    color: #005b96;
+}
+
+.benchmarks img {
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}

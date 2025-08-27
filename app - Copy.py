@@ -1,0 +1,1 @@
+SECRET_KEY=s3cr3tK3yWithLotsOfEntropy!

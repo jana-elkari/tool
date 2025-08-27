@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>RE Quick Check - Introduction</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="container intro">
+    <h2>Welcome to the RE Quick Check</h2>
+    <p>
+      The <strong>Quick Check Requirements Engineering (RE)</strong> is a lightweight tool 
+      that allows practitioners to compare the current state of their RE practices 
+      with those of other organizations.
+    </p>
+
+    <h3>Instructions</h3>
+    <ol>
+      <li>This Quick Check is completely <strong>anonymous</strong>. Your responses cannot be attributed to you or your organization.</li>
+      <li>Click on <em>"Let's go"</em> to start the Quick Check.</li>
+      <li>Answer all questions honestly for the most useful feedback.</li>
+      <li>After submission, you will receive a graphical evaluation of your results.</li>
+      <li>You can refine comparisons using filters after viewing results.</li>
+    </ol>
+
+    <a href="{{ url_for('survey') }}" class="btn">Let's go →</a>
+  </div>
+</body>
+</html>

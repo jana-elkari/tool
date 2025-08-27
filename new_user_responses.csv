@@ -1,0 +1,31 @@
+Problem,Treatment,EffectSize
+Communication flaws within the project team,communication_inside_team,-0.1398
+Technically unfeasible requirements,communication_inside_team,0.1070
+Insufficient support by project lead,relationship_team_customer,-0.0801
+Internal or external constraints are not considered,communication_inside_team,0.0768
+Incomplete or hidden requirements,communication_team_and_other_teams,-0.0738
+Weak knowledge about customer's application domain,communication_inside_team,-0.0711
+Weak knowledge about customer's application domain,communication_team_and_other_teams,-0.0693
+Gold plating (implementation of features without clear value),relationship_team_customer,-0.0622
+Weak access to customer needs and / or (internal) stakeholders,relationship_team_customer,0.0597
+Targets are moving,relationship_team_customer,0.0590
+Weak access to customer needs and / or (internal) stakeholders,working_method,0.0584
+We do not have enough time to carry out tasks,relationship_team_customer,-0.0578
+Inconsistent requirements,communication_inside_team,-0.0545
+Inconsistent requirements,relationship_team_customer,0.0545
+Gold plating (implementation of features without clear value),communication_team_and_other_teams,0.0525
+Weak knowledge about customer's application domain,work_setup,0.0519
+Changes in requirements not communicated,working_method,-0.0509
+Internal or external constraints are not considered,relationship_team_customer,-0.0509
+Incomplete or hidden requirements,working_method,-0.0504
+Communication flaws between the project and the customers,working_method,-0.0497
+We do not have enough time to carry out tasks,communication_team_and_other_teams,0.0486
+Underspecified requirements that are too abstract,work_setup,0.0474
+No use of standard format for documenting requirements,communication_team_and_other_teams,0.0465
+Problems with terminology,relationship_team_customer,0.0452
+Incomplete or hidden requirements,work_setup,-0.0451
+Communication flaws within the project team,work_setup,-0.0436
+Weak knowledge about customer's application domain,team_meetings,-0.0424
+Communication flaws between the project and the customers,communication_inside_team,0.0418
+Weak access to customer needs and / or (internal) stakeholders,communication_inside_team,-0.0410
+Targets are moving ,team_meetings,-0.0409
