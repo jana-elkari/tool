@@ -27,6 +27,13 @@
     </div>
     {% endif %}
 
+    {% if sankey_html %}
+<div class="recommendation-box">
+  <h3>Causal Recommender Visualization</h3>
+  {{ sankey_html | safe }}
+</div>
+{% endif %}
+
     <!-- === Peer Company Benchmarking === -->
     {% if peers is not none and peers.shape[0] > 0 %}
     <div class="recommendation-box">
@@ -98,6 +105,39 @@
         {% endfor %}
       </select>
 
+      <label for="filter_role">Filter by Role:</label>
+<select name="filter_role">
+  <option value="">All</option>
+  {% for role in roles %}
+    <option value="{{ role }}" {% if filter_role == role %}selected{% endif %}>{{ role }}</option>
+  {% endfor %}
+</select>
+
+<label for="filter_method">Filter by Project Method:</label>
+<select name="filter_method">
+  <option value="">All</option>
+  {% for method in methods %}
+    <option value="{{ method }}" {% if filter_method == method %}selected{% endif %}>{{ method }}</option>
+  {% endfor %}
+</select>
+
+<label for="filter_partners">Filter by External Partners:</label>
+<select name="filter_partners">
+  <option value="">All</option>
+  {% for p in partners %}
+    <option value="{{ p }}" {% if filter_partners == p %}selected{% endif %}>{{ p }}</option>
+  {% endfor %}
+</select>
+
+<label for="filter_distribution">Filter by Project Distribution:</label>
+<select name="filter_distribution">
+  <option value="">All</option>
+  {% for d in distributions %}
+    <option value="{{ d }}" {% if filter_distribution == d %}selected{% endif %}>{{ d }}</option>
+  {% endfor %}
+</select>
+
+
       <button type="submit">Apply Filters</button>
     </form>
 
@@ -107,10 +147,36 @@
       <h3>Benchmark Visuals</h3>
       <div class="plot-grid">
         {% for name, path in plots.items() %}
-        <div class="plot-card">
-          <img src="{{ url_for('static', filename=path) }}" alt="{{ name }}">
-        </div>
-        {% endfor %}
+<div class="plot-card">
+  {% if name == "team_size" %}
+    <p><strong>How many people are involved in your project?</strong></p>
+  {% elif name == "role" %}
+    <p><strong>What is the main role you occupy in your project?</strong></p>
+  {% elif name == "industry" %}
+    <p><strong>Please select the main industrial sector of your project or the application domain of the software you build.</strong></p>
+  {% elif name == "team_customer_relationship" %}
+    <p><strong>How would you rate the relationship between your project’s team and its customer? (1–5)</strong></p>
+  {% elif name == "failed_documentation" %}
+    <p><strong>Have you ever failed to document one or more requirements?</strong></p>
+  {% elif name == "team_communication" %}
+    <p><strong>How would you rate the quality of communication inside your team?</strong></p>
+  {% elif name == "common_problem" %}
+    <p><strong>Top 1 Problem (most critical)</strong></p>
+  {% elif name == "top2" %}
+    <p><strong>Top 2 Problem (most critical)</strong></p>
+  {% elif name == "top3" %}
+    <p><strong>Top 3 Problem (most critical)</strong></p>
+  {% elif name == "top4" %}
+    <p><strong>Top 4 Problem (most critical)</strong></p>
+  {% elif name == "top5" %}
+    <p><strong>Top 5 Problem (most critical)</strong></p>
+  {% else %}
+    <p><strong>{{ name.replace('_',' ').title() }}</strong></p>
+  {% endif %}
+  <img src="{{ url_for('static', filename=path) }}" alt="{{ name }}">
+</div>
+{% endfor %}
+
       </div>
     </div>
     {% endif %}

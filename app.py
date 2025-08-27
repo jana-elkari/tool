@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for
+import plotly.graph_objects as go
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
@@ -90,10 +91,11 @@ def get_collaborative_recommendation(df, current_user_response):
 
 def get_causal_recommendation(user_response, causal_df):
     if causal_df.empty:
-        return None
+        return None, None   # return both text recs and raw data
 
     problems = [user_response.get('top1'), user_response.get('top2'), user_response.get('top3')]
     recs = []
+    edges = []  # 🟢 for Sankey diagram
 
     for problem in problems:
         if not problem:
@@ -114,7 +116,11 @@ def get_causal_recommendation(user_response, causal_df):
             else:
                 recs.append(f"Improving {treatment} is likely to INCREASE the '{problem}' problem (strength {percentage:.1f}%).")
 
-    return recs
+            # 🟢 store structured edge for Sankey
+            edges.append((problem, treatment, effect))
+
+    return recs, edges
+
 
 
 # === Routes ===
@@ -171,6 +177,10 @@ def results():
 
     filter_country = request.args.get('filter_country')
     filter_industry = request.args.get('filter_industry')
+    filter_role = request.args.get('filter_role')
+    filter_method = request.args.get('filter_method')
+    filter_partners = request.args.get('filter_partners')
+    filter_distribution = request.args.get('filter_distribution')
 
     filtered_df = df.copy()
     if filter_country:
@@ -178,11 +188,55 @@ def results():
     if filter_industry:
         filtered_df = filtered_df[filtered_df['industry'] == filter_industry]
 
-    causal_recs = get_causal_recommendation(user_response, causal_df)
+    if filter_role:
+        filtered_df = filtered_df[filtered_df['role'] == filter_role]
+    if filter_method:
+        filtered_df = filtered_df[filtered_df['project_method'] == filter_method]
+    if filter_partners:
+        filtered_df = filtered_df[filtered_df['external_partners'] == filter_partners]
+    if filter_distribution:
+        filtered_df = filtered_df[filtered_df['project_distribution'] == filter_distribution]
+
+
+    causal_recs, causal_edges = get_causal_recommendation(user_response, causal_df)
     collab_recs, peers_df = get_collaborative_recommendation(df, user_response)
 
     recommendation = causal_recs if causal_recs else []
     statistics = collab_recs if collab_recs else []
+
+        # === Sankey Diagram ===
+    sankey_html = None
+    if causal_edges:
+        problems = list({p for p, t, e in causal_edges})
+        treatments = list({t for p, t, e in causal_edges})
+        labels = problems + treatments
+        label_to_id = {label: i for i, label in enumerate(labels)}
+
+        sources = [label_to_id[p] for p, t, e in causal_edges]
+        targets = [label_to_id[t] for p, t, e in causal_edges]
+        values = [abs(e) * 100 for p, t, e in causal_edges]
+        colors = ["green" if e < 0 else "red" for p, t, e in causal_edges]
+
+        fig = go.Figure(data=[go.Sankey(
+            node=dict(
+                pad=20,
+                thickness=20,
+                line=dict(color="black", width=0.5),
+                label=labels,
+                align="left",    
+                color="lightblue"
+            ),
+            link=dict(
+                source=sources,
+                target=targets,
+                value=values,
+                color=colors
+            )
+        )])
+
+        fig.update_layout(title_text="Causal Recommender Alluvial Diagram", font_size=12)
+        sankey_html = fig.to_html(full_html=False)
+
 
     plots = {}
     plot_dir = 'static'
@@ -214,16 +268,26 @@ def results():
         plt.close()
 
     return render_template(
-        'results.html',
-        recommendation=recommendation,
-        statistics=statistics,
-        plots=plots,
-        peers=peers_df,
-        countries=sorted(df['country'].unique()) if not df.empty else [],
-        industries=sorted(df['industry'].unique()) if not df.empty else [],
-        filter_country=filter_country,
-        filter_industry=filter_industry
-    )
+    'results.html',
+    recommendation=recommendation,
+    statistics=statistics,
+    plots=plots,
+    peers=peers_df,
+    sankey_html=sankey_html,   # 🟢 pass diagram
+    countries=sorted(df['country'].unique()) if not df.empty else [],
+    industries=sorted(df['industry'].unique()) if not df.empty else [],
+    roles=sorted(df['role'].dropna().unique()) if not df.empty else [],
+    methods=sorted(df['project_method'].dropna().unique()) if not df.empty else [],
+    partners=sorted(df['external_partners'].dropna().unique()) if not df.empty else [],
+    distributions=sorted(df['project_distribution'].dropna().unique()) if not df.empty else [],
+    filter_country=filter_country,
+    filter_industry=filter_industry,
+    filter_role=filter_role,
+    filter_method=filter_method,
+    filter_partners=filter_partners,
+    filter_distribution=filter_distribution
+)
+
 
 
 if __name__ == '__main__':
