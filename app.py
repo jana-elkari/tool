@@ -215,7 +215,8 @@ def results():
         sources = [label_to_id[p] for p, t, e in causal_edges]
         targets = [label_to_id[t] for p, t, e in causal_edges]
         values = [abs(e) * 100 for p, t, e in causal_edges]
-        colors = ["green" if e < 0 else "red" for p, t, e in causal_edges]
+        colors = ["lightgreen" if e < 0 else "lightcoral" for p, t, e in causal_edges]
+
 
         fig = go.Figure(data=[go.Sankey(
             node=dict(
@@ -234,7 +235,39 @@ def results():
             )
         )])
 
-        fig.update_layout(title_text="Causal Recommender Alluvial Diagram", font_size=12)
+        fig.update_layout(
+    title_text="Causal Recommender Alluvial Diagram",
+    font=dict(size=12, color="black"),
+    margin=dict(r=200, t=50, b=50, l=50),  # extra right margin
+    annotations=[
+        dict(
+            x=1.5, y=1.05,
+            xref="paper", yref="paper",
+            showarrow=False,
+            align="left",
+            text="<b>Legend</b>",
+            font=dict(size=12, color="black")
+        ),
+        dict(
+            x=1.5, y=1.0,
+            xref="paper", yref="paper",
+            showarrow=False,
+            align="left",
+            text="<span style='color:lightgreen;'>■</span> Positive relation",
+            font=dict(size=11, color="black")
+        ),
+        dict(
+            x=1.5, y=0.95,
+            xref="paper", yref="paper",
+            showarrow=False,
+            align="left",
+            text="<span style='color:lightcoral;'>■</span> Negative relation",
+            font=dict(size=11, color="black")
+        )
+    ]
+)
+
+
         sankey_html = fig.to_html(full_html=False)
 
 
