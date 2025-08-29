@@ -5,7 +5,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import secrets
 import os
-import psutil
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
@@ -329,5 +328,4 @@ def results():
 
 
 if __name__ == '__main__':
-    #print("Memory available:", psutil.virtual_memory().available / (1024*1024), "MB")
     app.run(debug=True)
