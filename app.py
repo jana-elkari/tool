@@ -12,7 +12,7 @@ app.secret_key = secrets.token_hex(32)
 matplotlib.use('Agg')
 
 # === Files ===
-CSV_FILE = 'user_responses_.csv'
+CSV_FILE = 'users.csv'
 CAUSAL_EFFECTS_CSV = 'model_outputs/causal_effects.csv'
 
 # Load causal effects once at startup
@@ -56,14 +56,14 @@ def get_collaborative_recommendation(df, current_user_response):
     df['continent'] = df['country'].map(COUNTRY_TO_CONTINENT)
 
     df = df[
-    ~(
-        (df['country'] == current_user_response['country']) &
-        (df['industry'] == current_user_response['industry']) &
-        (df['team_size'] == current_user_response['team_size']) &
-        (df['team_customer_relationship'] == current_user_response['team_customer_relationship']) &
-        (df['team_communication'] == current_user_response['team_communication'])
-    )
-]
+        ~(
+            (df['country'] == current_user_response['country']) &
+            (df['industry'] == current_user_response['industry']) &
+            (df['team_size'] == current_user_response['team_size']) &
+            (df['team_customer_relationship'] == current_user_response['team_customer_relationship']) &
+            (df['team_communication'] == current_user_response['team_communication'])
+        )
+    ]
     peers = df[
         (df['continent'] == user_continent) &
         (df['industry'] == current_user_response['industry']) &
@@ -88,6 +88,7 @@ def get_collaborative_recommendation(df, current_user_response):
         advice.append(f"Your internal communication ({current_user_response['team_communication']}) is above peers ({avg_team_comm:.2f}).")
 
     return advice, peers
+
 
 def get_causal_recommendation(user_response, causal_df):
     if causal_df.empty:
@@ -128,6 +129,7 @@ def get_causal_recommendation(user_response, causal_df):
 def intro():
     return render_template('intro.html')
 
+
 @app.route('/survey', methods=['GET', 'POST'])
 def survey():
     df = pd.read_csv(CSV_FILE) if os.path.exists(CSV_FILE) else pd.DataFrame()
@@ -153,6 +155,15 @@ def survey():
             'user_feedback_frequency': request.form['user_feedback_frequency'],
             'assumption': request.form['assumption'],
             'common_problem': request.form['common_problem'],
+            'requirements_elicitation': request.form['requirements_elicitation'],
+            # store multiple answers as one string separated by "/"
+            'elicitation_techniques': " / ".join(request.form.getlist('elicitation_techniques')),
+            'explicit_distinction': " / ".join(request.form.getlist('explicit_distinction')),
+            'requirements_documentation': " / ".join(request.form.getlist('requirements_documentation')),
+            'no_documentation_reasons': " / ".join(request.form.getlist('no_documentation_reasons')),
+            # 'requirements_documentation': request.form['requirements_documentation'],
+            # 'no_documentation_reasons': request.form['no_documentation_reasons'],
+            'non_functional_requirements':  " / ".join(request.form.getlist('non_functional_requirements')),
             'top2': request.form['top2'],
             'top3': request.form['top3'],
             'top4': request.form['top4'],
@@ -172,6 +183,7 @@ def survey():
 def results():
     df = pd.read_csv(CSV_FILE) if os.path.exists(CSV_FILE) else pd.DataFrame()
     user_response = session.get('user_response')
+    print(user_response)
     if not user_response:
         return redirect(url_for('survey'))
 
@@ -187,7 +199,6 @@ def results():
         filtered_df = filtered_df[filtered_df['country'] == filter_country]
     if filter_industry:
         filtered_df = filtered_df[filtered_df['industry'] == filter_industry]
-
     if filter_role:
         filtered_df = filtered_df[filtered_df['role'] == filter_role]
     if filter_method:
@@ -197,14 +208,13 @@ def results():
     if filter_distribution:
         filtered_df = filtered_df[filtered_df['project_distribution'] == filter_distribution]
 
-
     causal_recs, causal_edges = get_causal_recommendation(user_response, causal_df)
     collab_recs, peers_df = get_collaborative_recommendation(df, user_response)
 
     recommendation = causal_recs if causal_recs else []
     statistics = collab_recs if collab_recs else []
 
-        # === Sankey Diagram ===
+    # === Sankey Diagram ===
     sankey_html = None
     if causal_edges:
         problems = list({p for p, t, e in causal_edges})
@@ -216,7 +226,6 @@ def results():
         targets = [label_to_id[t] for p, t, e in causal_edges]
         values = [abs(e) * 100 for p, t, e in causal_edges]
         colors = ["lightgreen" if e < 0 else "lightcoral" for p, t, e in causal_edges]
-
 
         fig = go.Figure(data=[go.Sankey(
             node=dict(
@@ -236,63 +245,81 @@ def results():
         )])
 
         fig.update_layout(
-    title_text="Causal Recommender Alluvial Diagram",
-    font=dict(size=12, color="black"),
-    margin=dict(r=200, t=50, b=50, l=50),  # extra right margin
-    annotations=[
-        dict(
-            x=1.5, y=1.05,
-            xref="paper", yref="paper",
-            showarrow=False,
-            align="left",
-            text="<b>Legend</b>",
-            font=dict(size=12, color="black")
-        ),
-        dict(
-            x=1.5, y=1.0,
-            xref="paper", yref="paper",
-            showarrow=False,
-            align="left",
-            text="<span style='color:lightgreen;'>■</span> Positive relation",
-            font=dict(size=11, color="black")
-        ),
-        dict(
-            x=1.5, y=0.95,
-            xref="paper", yref="paper",
-            showarrow=False,
-            align="left",
-            text="<span style='color:lightcoral;'>■</span> Negative relation",
-            font=dict(size=11, color="black")
+            title_text="Causal Recommender Alluvial Diagram",
+            font=dict(size=12, color="black"),
+            margin=dict(r=200, t=50, b=50, l=50),  # extra right margin
+            annotations=[
+                dict(
+                    x=1.5, y=1.05,
+                    xref="paper", yref="paper",
+                    showarrow=False,
+                    align="left",
+                    text="<b>Legend</b>",
+                    font=dict(size=12, color="black")
+                ),
+                dict(
+                    x=1.5, y=1.0,
+                    xref="paper", yref="paper",
+                    showarrow=False,
+                    align="left",
+                    text="<span style='color:lightgreen;'>■</span> Positive relation",
+                    font=dict(size=11, color="black")
+                ),
+                dict(
+                    x=1.5, y=0.95,
+                    xref="paper", yref="paper",
+                    showarrow=False,
+                    align="left",
+                    text="<span style='color:lightcoral;'>■</span> Negative relation",
+                    font=dict(size=11, color="black")
+                )
+            ]
         )
-    ]
-)
-
 
         sankey_html = fig.to_html(full_html=False)
 
-
+    # === Visualizations ===
     plots = {}
     plot_dir = 'static'
     for column in [
         'team_customer_relationship', 'failed_documentation', 'team_communication', 'role',
-        'industry',  'country', 'team_size', 'external_partners',
+        'industry', 'country', 'team_size', 'external_partners',
         'project_distribution', 'work', 'project_method', 'meeting_frequency',
-        'user_feedback_frequency','common_problem', 'top2','top3','top4', 'top5'
+        'user_feedback_frequency', 'common_problem', 'top2', 'top3', 'top4', 'top5',
+        'requirements_elicitation', 'elicitation_techniques',
+        'explicit_distinction',
+         'requirements_documentation', 'no_documentation_reasons', 'non_functional_requirements'
     ]:
-        plt.figure(figsize=(10, 6))
-        if pd.api.types.is_numeric_dtype(filtered_df[column]):
-            values = filtered_df[column].value_counts().sort_index()
+        if column == "elicitation_techniques" or column == "explicit_distinction" or column == 'requirements_documentation' or column == "no_documentation_reasons" or column == "non_functional_requirements":
+            plt.figure(figsize=(30, 20))  # bigger chart for long labels
+            # split multiple answers per row into separate values
+            all_values = []
+            for entry in filtered_df[column].dropna():
+                parts = [p.strip() for p in str(entry).split("/") if p.strip()]
+                all_values.extend(parts)
+            values = pd.Series(all_values).value_counts().sort_index()
+
+            # get user selected answers as list
+            selected_answers = [p.strip() for p in str(user_response.get(column, "")).split("/") if p.strip()]
         else:
-            values = filtered_df[column].value_counts()
+            plt.figure(figsize=(20, 15))
+            if pd.api.types.is_numeric_dtype(filtered_df[column]):
+                values = filtered_df[column].value_counts().sort_index()
+            else:
+                values = filtered_df[column].value_counts()
+            selected_answers = [str(user_response.get(column))]
 
         bars = values.index.tolist()
         heights = values.values.tolist()
-        colors = ['yellow' if str(bar) == str(user_response[column]) else 'blue' for bar in bars]
 
+        # highlight multiple selections
+        colors = ['yellow' if str(bar) in selected_answers else 'blue' for bar in bars]
+
+        plt.rcParams.update({'font.size': 16})
         plt.bar(bars, heights, color=colors)
         plt.title(column.replace('_', ' ').title())
         plt.ylabel('Count')
-        plt.xticks(rotation=45, ha='right')
+        plt.xticks(rotation=60 if (column == "elicitation_techniques" or column == 'explicit_distinction' or column == 'requirements_documentation' or column == "no_documentation_reasons" or column == "non_functional_requirements") else 45, ha='right')
         plt.tight_layout()
 
         path = os.path.join(plot_dir, f'{column}.png')
@@ -301,26 +328,25 @@ def results():
         plt.close()
 
     return render_template(
-    'results.html',
-    recommendation=recommendation,
-    statistics=statistics,
-    plots=plots,
-    peers=peers_df,
-    sankey_html=sankey_html,   # 🟢 pass diagram
-    countries=sorted(df['country'].unique()) if not df.empty else [],
-    industries=sorted(df['industry'].unique()) if not df.empty else [],
-    roles=sorted(df['role'].dropna().unique()) if not df.empty else [],
-    methods=sorted(df['project_method'].dropna().unique()) if not df.empty else [],
-    partners=sorted(df['external_partners'].dropna().unique()) if not df.empty else [],
-    distributions=sorted(df['project_distribution'].dropna().unique()) if not df.empty else [],
-    filter_country=filter_country,
-    filter_industry=filter_industry,
-    filter_role=filter_role,
-    filter_method=filter_method,
-    filter_partners=filter_partners,
-    filter_distribution=filter_distribution
-)
-
+        'results.html',
+        recommendation=recommendation,
+        statistics=statistics,
+        plots=plots,
+        peers=peers_df,
+        sankey_html=sankey_html,
+        countries=sorted(df['country'].unique()) if not df.empty else [],
+        industries=sorted(df['industry'].unique()) if not df.empty else [],
+        roles=sorted(df['role'].dropna().unique()) if not df.empty else [],
+        methods=sorted(df['project_method'].dropna().unique()) if not df.empty else [],
+        partners=sorted(df['external_partners'].dropna().unique()) if not df.empty else [],
+        distributions=sorted(df['project_distribution'].dropna().unique()) if not df.empty else [],
+        filter_country=filter_country,
+        filter_industry=filter_industry,
+        filter_role=filter_role,
+        filter_method=filter_method,
+        filter_partners=filter_partners,
+        filter_distribution=filter_distribution
+    )
 
 
 if __name__ == '__main__':

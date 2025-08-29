@@ -164,6 +164,12 @@
     <p><strong>Is your project distributed?</strong></p>
   {% elif name == "work" %}
     <p><strong>Do you tend to work from home, on-site, or both?</strong></p>
+  {% elif name == "requirements_elicitation" %}
+    <p><strong>How are the requirements elicited in your project?</strong></p>
+{% elif name == "elicitation_techniques" %}
+    <p><strong>Which techniques do you use for requirements elicitation? (Select all that apply)</strong></p>
+    {% elif name == "explicit_distinction" %}
+    <p><strong>Which aspects do you explicitly distinguish when specifying requirements? (Select all that apply)</strong></p>
   {% elif name == "team_communication" %}
     <p><strong>How would you rate the quality of communication inside your team?</strong></p>
     {% elif name == "project_method" %}
@@ -175,8 +181,17 @@
   {% elif name == "user_feedback_frequency" %}
     <p><strong>How often is user feedback provided?</strong></p>
 
-    {% elif name == "meeting_frequency" %}
+    {% elif name == "non_functional_requirements" %}
+    <p><strong>Which classes of non-functional requirements do you explicitly consider in your requirements documentation?</strong></p>
+
+      {% elif name == "meeting_frequency" %}
     <p><strong>How often do members of your team meet, informally by chance meeting or in announced meetings?</strong></p>
+
+    {% elif name == "requirements_documentation" %}
+    <p><strong>How do you document requirements?</strong></p>
+
+    {% elif name == "no_documentation_reasons" %}
+    <p><strong>Check as many reasons for failing to document requirements that have applied in at least one circumstance.</strong></p>
   {% elif name == "top2" %}
     <p><strong>Top 2 Problem (most critical)</strong></p>
   {% elif name == "top3" %}
