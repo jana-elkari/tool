@@ -329,5 +329,5 @@ def results():
 
 
 if __name__ == '__main__':
-    print("Memory available:", psutil.virtual_memory().available / (1024*1024), "MB")
+    #print("Memory available:", psutil.virtual_memory().available / (1024*1024), "MB")
     app.run(debug=True)
