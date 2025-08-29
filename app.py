@@ -5,6 +5,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import secrets
 import os
+import psutil
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
@@ -18,7 +19,6 @@ CAUSAL_EFFECTS_CSV = 'model_outputs/causal_effects.csv'
 # Load causal effects once at startup
 causal_df = pd.read_csv(CAUSAL_EFFECTS_CSV, encoding='utf-8-sig') if os.path.exists(CAUSAL_EFFECTS_CSV) else pd.DataFrame()
 print("Loaded causal_effects.csv rows:", len(causal_df) if not causal_df.empty else 0)
-
 
 # === Country → Continent mapping ===
 COUNTRY_TO_CONTINENT = {
@@ -38,7 +38,7 @@ COUNTRY_TO_CONTINENT = {
     "Spain": "Europe",
     "Sweden": "Europe",
     "Switzerland": "Europe",
-    "Turkey": "Europe",  
+    "Turkey": "Europe",
     "United Kingdom": "Europe",
     "United States": "North America"
 }
@@ -67,9 +67,10 @@ def get_collaborative_recommendation(df, current_user_response):
     peers = df[
         (df['continent'] == user_continent) &
         (df['industry'] == current_user_response['industry']) &
-        (df['team_size'].astype(float).between(min_size, max_size)) 
+        (df['team_size'].astype(float).between(min_size, max_size))
     ]
     print('peers are here', peers)
+
     if peers.empty:
         return [f"No peer companies available in {user_continent}, {current_user_response['industry']} with similar size."], pd.DataFrame()
 
@@ -92,11 +93,11 @@ def get_collaborative_recommendation(df, current_user_response):
 
 def get_causal_recommendation(user_response, causal_df):
     if causal_df.empty:
-        return None, None   # return both text recs and raw data
+        return None, None
 
     problems = [user_response.get('top1'), user_response.get('top2'), user_response.get('top3')]
     recs = []
-    edges = []  # 🟢 for Sankey diagram
+    edges = []
 
     for problem in problems:
         if not problem:
@@ -117,14 +118,11 @@ def get_causal_recommendation(user_response, causal_df):
             else:
                 recs.append(f"Improving {treatment} is likely to INCREASE the '{problem}' problem (strength {percentage:.1f}%).")
 
-            # 🟢 store structured edge for Sankey
             edges.append((problem, treatment, effect))
 
     return recs, edges
 
 
-
-# === Routes ===
 @app.route('/')
 def intro():
     return render_template('intro.html')
@@ -156,14 +154,11 @@ def survey():
             'assumption': request.form['assumption'],
             'common_problem': request.form['common_problem'],
             'requirements_elicitation': request.form['requirements_elicitation'],
-            # store multiple answers as one string separated by "/"
             'elicitation_techniques': " / ".join(request.form.getlist('elicitation_techniques')),
             'explicit_distinction': " / ".join(request.form.getlist('explicit_distinction')),
             'requirements_documentation': " / ".join(request.form.getlist('requirements_documentation')),
             'no_documentation_reasons': " / ".join(request.form.getlist('no_documentation_reasons')),
-            # 'requirements_documentation': request.form['requirements_documentation'],
-            # 'no_documentation_reasons': request.form['no_documentation_reasons'],
-            'non_functional_requirements':  " / ".join(request.form.getlist('non_functional_requirements')),
+            'non_functional_requirements': " / ".join(request.form.getlist('non_functional_requirements')),
             'top2': request.form['top2'],
             'top3': request.form['top3'],
             'top4': request.form['top4'],
@@ -183,10 +178,10 @@ def survey():
 def results():
     df = pd.read_csv(CSV_FILE) if os.path.exists(CSV_FILE) else pd.DataFrame()
     user_response = session.get('user_response')
-    print(user_response)
     if not user_response:
         return redirect(url_for('survey'))
 
+    # === Filters ===
     filter_country = request.args.get('filter_country')
     filter_industry = request.args.get('filter_industry')
     filter_role = request.args.get('filter_role')
@@ -233,7 +228,7 @@ def results():
                 thickness=20,
                 line=dict(color="black", width=0.5),
                 label=labels,
-                align="left",    
+                align="left",
                 color="lightblue"
             ),
             link=dict(
@@ -247,62 +242,44 @@ def results():
         fig.update_layout(
             title_text="Causal Recommender Alluvial Diagram",
             font=dict(size=12, color="black"),
-            margin=dict(r=200, t=50, b=50, l=50),  # extra right margin
-            annotations=[
-                dict(
-                    x=1.5, y=1.05,
-                    xref="paper", yref="paper",
-                    showarrow=False,
-                    align="left",
-                    text="<b>Legend</b>",
-                    font=dict(size=12, color="black")
-                ),
-                dict(
-                    x=1.5, y=1.0,
-                    xref="paper", yref="paper",
-                    showarrow=False,
-                    align="left",
-                    text="<span style='color:lightgreen;'>■</span> Positive relation",
-                    font=dict(size=11, color="black")
-                ),
-                dict(
-                    x=1.5, y=0.95,
-                    xref="paper", yref="paper",
-                    showarrow=False,
-                    align="left",
-                    text="<span style='color:lightcoral;'>■</span> Negative relation",
-                    font=dict(size=11, color="black")
-                )
-            ]
+            margin=dict(r=200, t=50, b=50, l=50)
         )
-
         sankey_html = fig.to_html(full_html=False)
 
-    # === Visualizations ===
+    # === Visualizations with caching ===
     plots = {}
     plot_dir = 'static'
-    for column in [
+    os.makedirs(plot_dir, exist_ok=True)
+
+    columns_to_plot = [
         'team_customer_relationship', 'failed_documentation', 'team_communication', 'role',
         'industry', 'country', 'team_size', 'external_partners',
         'project_distribution', 'work', 'project_method', 'meeting_frequency',
         'user_feedback_frequency', 'common_problem', 'top2', 'top3', 'top4', 'top5',
         'requirements_elicitation', 'elicitation_techniques',
-        'explicit_distinction',
-         'requirements_documentation', 'no_documentation_reasons', 'non_functional_requirements'
-    ]:
-        if column == "elicitation_techniques" or column == "explicit_distinction" or column == 'requirements_documentation' or column == "no_documentation_reasons" or column == "non_functional_requirements":
-            plt.figure(figsize=(30, 20))  # bigger chart for long labels
-            # split multiple answers per row into separate values
+        'explicit_distinction', 'requirements_documentation',
+        'no_documentation_reasons', 'non_functional_requirements'
+    ]
+
+    for column in columns_to_plot:
+        path = os.path.join(plot_dir, f'{column}.png')
+
+        if os.path.exists(path):
+            plots[column] = f'{column}.png'
+            continue
+
+        if column in ["elicitation_techniques", "explicit_distinction",
+                      "requirements_documentation", "no_documentation_reasons",
+                      "non_functional_requirements"]:
+            plt.figure(figsize=(18, 12))
             all_values = []
             for entry in filtered_df[column].dropna():
                 parts = [p.strip() for p in str(entry).split("/") if p.strip()]
                 all_values.extend(parts)
             values = pd.Series(all_values).value_counts().sort_index()
-
-            # get user selected answers as list
             selected_answers = [p.strip() for p in str(user_response.get(column, "")).split("/") if p.strip()]
         else:
-            plt.figure(figsize=(20, 15))
+            plt.figure(figsize=(12, 8))
             if pd.api.types.is_numeric_dtype(filtered_df[column]):
                 values = filtered_df[column].value_counts().sort_index()
             else:
@@ -311,21 +288,23 @@ def results():
 
         bars = values.index.tolist()
         heights = values.values.tolist()
-
-        # highlight multiple selections
         colors = ['yellow' if str(bar) in selected_answers else 'blue' for bar in bars]
 
-        plt.rcParams.update({'font.size': 16})
+        plt.rcParams.update({'font.size': 14})
         plt.bar(bars, heights, color=colors)
         plt.title(column.replace('_', ' ').title())
         plt.ylabel('Count')
-        plt.xticks(rotation=60 if (column == "elicitation_techniques" or column == 'explicit_distinction' or column == 'requirements_documentation' or column == "no_documentation_reasons" or column == "non_functional_requirements") else 45, ha='right')
+        plt.xticks(rotation=60 if column in [
+            "elicitation_techniques", "explicit_distinction",
+            "requirements_documentation", "no_documentation_reasons",
+            "non_functional_requirements"
+        ] else 45, ha='right')
         plt.tight_layout()
 
-        path = os.path.join(plot_dir, f'{column}.png')
-        plt.savefig(path)
+        plt.savefig(path, dpi=80)
         plots[column] = f'{column}.png'
-        plt.close()
+        plt.clf()
+        plt.close('all')
 
     return render_template(
         'results.html',
@@ -350,4 +329,5 @@ def results():
 
 
 if __name__ == '__main__':
+    print("Memory available:", psutil.virtual_memory().available / (1024*1024), "MB")
     app.run(debug=True)
