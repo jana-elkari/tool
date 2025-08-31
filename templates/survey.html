@@ -31,7 +31,7 @@
         <h2>RE Quick Check V2</h2>
         <form method="POST" class="survey-form">
 
-            <label> In which country are you personally located?</label>
+            <label> 1- In which country are you personally located?</label>
             <select name="country" required>
                 <option value="Argentina">Argentina</option>
                 <option value="Australia">Australia</option>
@@ -54,10 +54,10 @@
                 <option value="United States">United States</option>
             </select>
 
-            <label for="team_size">How many people are involved in your project?</label>
+            <label for="team_size">2- How many people are involved in your project?</label>
             <input type="number" name="team_size" id="team_size" min="1" required>
 
-            <label>Please select the main industrial sector of your project or the application domain of the
+            <label>3- Please select the main industrial sector of your project or the application domain of the
 software you build.</label>
             <select name="industry" required>
                 <option value="Aerospace">Aerospace</option>
@@ -85,19 +85,19 @@ software you build.</label>
             </select>
 
 
-            <label>Does your project involve external partners?</label>
+            <label>4- Does your project involve external partners?</label>
             <select name="external_partners" required>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
             </select>
 
-            <label> Is your project distributed? </label>
+            <label> 5- Is your project distributed? </label>
             <select name="project_distribution" required>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
             </select>
 
-            <label> Do you tend to work from home, on-site, or both? </label>
+            <label> 6- Do you tend to work from home, on-site, or both? </label>
             <select name="work" required>
                 <option value="Approximately half on-site and half from home">Approximately half on-site and half from home</option>
                 <option value="Almost completely on-site">Almost completely on-site </option>
@@ -106,7 +106,7 @@ software you build.</label>
                 <option value="Mostly from home">Mostly from home</option>
             </select>
 
-            <label>How would you personally characterise the way your project works?</label>
+            <label>7- How would you personally characterise the way your project works?</label>
             <select name="project_method" required>
                 <option value="Agile">Agile</option>
                 <option value="Plan-driven">Plan-driven</option>
@@ -115,7 +115,7 @@ software you build.</label>
                 <option value="Hybrid">Hybrid</option>
             </select>
 
-            <label>What is the main role you occupy in your project?</label>
+            <label>8- What is the main role you occupy in your project?</label>
 <select name="role" required>
     <option value="Developer">Developer</option>
     <option value="Project Lead / Project Manager">Project Lead / Project Manager</option>
@@ -131,7 +131,7 @@ software you build.</label>
     <option value="Other (please specify)">Other (please specify)</option>
 </select>
 
-            <label>How would you rate the relationship between your project’s team and its customer? (1-5):</label>
+            <label>9- How would you rate the relationship between your project’s team and its customer? (1-5):</label>
             <select name="team_customer_relationship" required>
                 <option value="1">1 - Very Bad</option>
                 <option value="2">2 - Bad</option>
@@ -142,7 +142,7 @@ software you build.</label>
 
     
 
-            <label>How would you rate the quality of communication inside your team?</label>
+            <label>10- How would you rate the quality of communication inside your team?</label>
             <select name="team_communication" required>
                 <option value="1">1 - Very Bad</option>
                 <option value="2">2 - Bad</option>
@@ -151,7 +151,16 @@ software you build.</label>
                 <option value="5">5 - Very Good</option>
             </select>
 
-<label>How often do members of your team meet, informally by chance meeting or in announced meetings?</label>
+             <label>11- How would you rate the quality of communication between your team and other teams on the same project?</label>
+            <select name="communication_with_other_teams" required>
+                <option value="1">1 - Very Bad</option>
+                <option value="2">2 - Bad</option>
+                <option value="3">3 - Neutral</option>
+                <option value="4">4 - Good</option>
+                <option value="5">5 - Very Good</option>
+            </select>
+
+<label>12- How often do members of your team meet, informally by chance meeting or in announced meetings?</label>
             <select name="meeting_frequency" required>
                 <option value="Almost daily">Almost daily</option>
                 <option value="Weekly">Weekly</option>
@@ -160,7 +169,7 @@ software you build.</label>
                 <option value="Other (Please specify)">Other (Please specify)</option>
             </select>
 
-            <label>How often is user feedback provided?</label>
+            <label>13- How often is user feedback provided?</label>
             <select name="user_feedback_frequency" required>
                 <option value="Almost daily">Almost daily</option>
                 <option value="Weekly">Weekly</option>
@@ -173,7 +182,7 @@ software you build.</label>
 
 
 
-             <label>How are the requirements elicited in your project?</label>
+             <label>14- How are the requirements elicited in your project?</label>
             <select name="requirements_elicitation" required>
                 <option value="Agile: we elicit and/or refine requirements in several iterations.">
                     Agile: we elicit and/or refine requirements in several iterations.
@@ -185,7 +194,7 @@ software you build.</label>
                 <option value="Other (please specify)">Other (please specify)</option>
             </select>
 
-            <label><b>Which techniques do you use for requirements elicitation? (Select all that apply)<b></label>
+            <label><b>15- Which techniques do you use for requirements elicitation? (Select all that apply)<b></label>
 <div class="checkbox-group">
   <label><input type="checkbox" name="elicitation_techniques" value="Interviews"> Interviews</label><br>
   <label><input type="checkbox" name="elicitation_techniques" value="Analysis of existing documents"> Analysis of existing documents</label><br>
@@ -203,7 +212,7 @@ software you build.</label>
   <label><input type="checkbox" name="elicitation_techniques" value="I don't know"> I don't know</label>
 </div>
 
- <label><b>If you are in a situation where you lack information and have to make an assumption to proceed in your project, what do you typically do?</b></label>
+ <label><b>16- If you are in a situation where you lack information and have to make an assumption to proceed in your project, what do you typically do?</b></label>
             <select name="assumption" required>
                 <option value="Make a reasonable assumption myself and proceed">Make a reasonable assumption myself and proceed</option>
                 <option value="Ask the customer/end user/or both what should be assumed before proceeding">Ask the customer, end user, or both what should be assumed before proceeding</option>
@@ -211,25 +220,40 @@ software you build.</label>
                 <option value="Does not apply">Does not apply</option>
             </select>
 
-       <label><b>How do you document requirements?</b> (Select all that apply)</label><br>
-<div class="checkbox-group">
-  <label><input type="checkbox" name="requirements_documentation" value="Activity diagrams"> Activity diagrams</label>
-  <label><input type="checkbox" name="requirements_documentation" value="Class diagrams"> Class diagrams</label>
-  <label><input type="checkbox" name="requirements_documentation" value="Sequence diagrams"> Sequence diagrams</label>
-  <label><input type="checkbox" name="requirements_documentation" value="State machines"> State machines</label>
-  <label><input type="checkbox" name="requirements_documentation" value="Structured lists of requirements"> Structured lists of requirements</label>
-  <label><input type="checkbox" name="requirements_documentation" value="Use case diagrams"> Use case diagrams</label>
-  <label><input type="checkbox" name="requirements_documentation" value="Acceptance Criteria (Given-When-Then)"> Acceptance Criteria (Given-When-Then)</label>
-  <label><input type="checkbox" name="requirements_documentation" value="Prototypes / user screens"> Prototypes / user screens</label>
-  <label><input type="checkbox" name="requirements_documentation" value="User stories"> User stories</label>
-  <label><input type="checkbox" name="requirements_documentation" value="Informal sketches / wireframes / mind maps"> Informal sketches / wireframes / mind maps</label>
-  <label><input type="checkbox" name="requirements_documentation" value="Goal models"> Goal models</label>
-  <label><input type="checkbox" name="requirements_documentation" value="Business process models"> Business process models</label>
-  <label><input type="checkbox" name="requirements_documentation" value="Natural language / plain text"> Natural language / plain text</label>
-  <label><input type="checkbox" name="requirements_documentation" value="I don't know"> I don't know</label>
-  <label><input type="checkbox" name="requirements_documentation" value="Other"> Other</label>
-</div>
- <label><b> Which information do you explicitly document when dealing with requirements?<b></label>
+<label><b>
+18- Suppose that you know that the only people who benefit from a document that you must produce are people other than the project's current members.
+Rate the following based on what best describes your behavior and thinking:
+</b></label><br>
+
+<label>I produce the document willingly because I know it's essential.</label>
+<select name="doc_willing" required>
+  <option value="Strongly disagree">Strongly disagree</option>
+  <option value="Disagree">Disagree</option>
+  <option value="Neutral">Neutral</option>
+  <option value="Agree">Agree</option>
+  <option value="Strongly agree">Strongly agree</option>
+</select><br><br>
+
+<label>Even though I don't want to produce the document, I produce it anyway, because I know it's essential for the future of the project.</label>
+<select name="doc_unwilling_but_produce" required>
+  <option value="Strongly disagree">Strongly disagree</option>
+  <option value="Disagree">Disagree</option>
+  <option value="Neutral">Neutral</option>
+  <option value="Agree">Agree</option>
+  <option value="Strongly agree">Strongly agree</option>
+</select><br><br>
+
+<label>I don't produce the document, because the current members of the project do not need it.</label>
+<select name="doc_dont_produce" required>
+  <option value="Strongly disagree">Strongly disagree</option>
+  <option value="Disagree">Disagree</option>
+  <option value="Neutral">Neutral</option>
+  <option value="Agree">Agree</option>
+  <option value="Strongly agree">Strongly agree</option>
+</select>
+
+        
+ <label><b>19- Which information do you explicitly document when dealing with requirements?<b></label>
 <div class="checkbox-group">
   <label><input type="checkbox" name="explicit_distinction" value="Architectural constraints"> Architectural constraints</label><br>
   <label><input type="checkbox" name="explicit_distinction" value="Development process aspects"> Development process aspects</label><br>
@@ -249,9 +273,28 @@ software you build.</label>
   <label><input type="checkbox" name="explicit_distinction" value="None of the above"> None of the above</label>
 </div>
 
+       <label><b>20- How do you document requirements?</b> (Select all that apply)</label><br>
+<div class="checkbox-group">
+  <label><input type="checkbox" name="requirements_documentation" value="Activity diagrams"> Activity diagrams</label>
+  <label><input type="checkbox" name="requirements_documentation" value="Class diagrams"> Class diagrams</label>
+  <label><input type="checkbox" name="requirements_documentation" value="Sequence diagrams"> Sequence diagrams</label>
+  <label><input type="checkbox" name="requirements_documentation" value="State machines"> State machines</label>
+  <label><input type="checkbox" name="requirements_documentation" value="Structured lists of requirements"> Structured lists of requirements</label>
+  <label><input type="checkbox" name="requirements_documentation" value="Use case diagrams"> Use case diagrams</label>
+  <label><input type="checkbox" name="requirements_documentation" value="Acceptance Criteria (Given-When-Then)"> Acceptance Criteria (Given-When-Then)</label>
+  <label><input type="checkbox" name="requirements_documentation" value="Prototypes / user screens"> Prototypes / user screens</label>
+  <label><input type="checkbox" name="requirements_documentation" value="User stories"> User stories</label>
+  <label><input type="checkbox" name="requirements_documentation" value="Informal sketches / wireframes / mind maps"> Informal sketches / wireframes / mind maps</label>
+  <label><input type="checkbox" name="requirements_documentation" value="Goal models"> Goal models</label>
+  <label><input type="checkbox" name="requirements_documentation" value="Business process models"> Business process models</label>
+  <label><input type="checkbox" name="requirements_documentation" value="Natural language / plain text"> Natural language / plain text</label>
+  <label><input type="checkbox" name="requirements_documentation" value="I don't know"> I don't know</label>
+  <label><input type="checkbox" name="requirements_documentation" value="Other"> Other</label>
+</div>
 
 
-<label><b>Which classes of non-functional requirements do you explicitly consider in your requirements documentation? (Select all that apply)</b></label>
+
+<label><b>21- Which classes of non-functional requirements do you explicitly consider in your requirements documentation? (Select all that apply)</b></label>
 <div class="checkbox-group">
   <label><input type="checkbox" name="non_functional_requirements" value="Compatibility (e.g., co-existence, interoperability)"> Compatibility (e.g., co-existence, interoperability)</label>
   <label><input type="checkbox" name="non_functional_requirements" value="Maintainability (e.g., analysability, modularity, modifiability, reusability, testability)"> Maintainability (e.g., analysability, modularity, modifiability, reusability, testability)</label>
@@ -266,7 +309,7 @@ software you build.</label>
   <label><input type="checkbox" name="non_functional_requirements" value="I don't know"> I don't know</label>
 </div>
 
-<label>Have you ever failed to document one or more requirements?</label>
+<label>23- Have you ever failed to document one or more requirements?</label>
             <select name="failed_documentation" required>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
@@ -277,7 +320,7 @@ software you build.</label>
             
            
 
-<label><b>Check as many reasons for failing to document requirements that have applied in at least one circumstance.</b></label><br>
+<label><b>23- Check as many reasons for failing to document requirements that have applied in at least one circumstance.</b></label><br>
 <div class="checkbox-group">
   <label><input type="checkbox" name="no_documentation_reasons" value="I didn't need to document it. I know it."> I didn't need to document it. I know it.</label>
   <label><input type="checkbox" name="no_documentation_reasons" value="I knew colleagues would complain or hate or ridicule me."> I knew colleagues would complain or hate or ridicule me.</label>
@@ -288,6 +331,18 @@ software you build.</label>
   <label><input type="checkbox" name="no_documentation_reasons" value="My colleagues told me not to spend any time on documentation."> My colleagues told me not to spend any time on documentation.</label>
   <label><input type="checkbox" name="no_documentation_reasons" value="My colleagues told me not to waste any (more) time on documentation."> My colleagues told me not to waste any (more) time on documentation.</label>
   <label><input type="checkbox" name="no_documentation_reasons" value="Other"> Other</label>
+</div>
+
+<label><b>How do you align software testing with requirements?</b> (Select all that apply)</label><br>
+<div class="checkbox-group">
+  <label><input type="checkbox" name="requirements_testing_alignment" value="Testers participate in requirements reviews"> Testers participate in requirements reviews</label><br>
+  <label><input type="checkbox" name="requirements_testing_alignment" value="We check the coverage of requirements with tests"> We check the coverage of requirements with tests</label><br>
+  <label><input type="checkbox" name="requirements_testing_alignment" value="We define acceptance criteria and tests for requirements"> We define acceptance criteria and tests for requirements</label><br>
+  <label><input type="checkbox" name="requirements_testing_alignment" value="We derive tests from system models"> We derive tests from system models</label><br>
+  <label><input type="checkbox" name="requirements_testing_alignment" value="We do not align tests and requirements"> We do not align tests and requirements</label><br>
+  <label><input type="checkbox" name="requirements_testing_alignment" value="I don't know"> I don't know</label><br>
+  <label><input type="checkbox" name="requirements_testing_alignment" value="Does not apply"> Does not apply</label><br>
+  <label><input type="checkbox" name="requirements_testing_alignment" value="Other"> Other</label>
 </div>
 
 

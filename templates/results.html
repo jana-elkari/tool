@@ -187,7 +187,27 @@
       {% elif name == "meeting_frequency" %}
     <p><strong>How often do members of your team meet, informally by chance meeting or in announced meetings?</strong></p>
 
-    {% elif name == "requirements_documentation" %}
+    {% elif name == "doc_willing" %}
+    <p><strong>I produce the document willingly because I know it's essential.</strong></p>
+
+    {% elif name == "communication_with_other_teams" %}
+    <p><strong>How would you rate the quality of communication between your team and other teams on the same project?
+</strong></p>
+
+    {% elif name == "doc_unwilling_but_produce" %}
+    <p><strong>I produce the document willingly because I know it's essential.</strong></p>
+
+     {% elif name == "doc_dont_produce" %}
+    <p><strong>I don't produce the document, because the current members of the project do not need it.</strong></p>
+
+ {% elif name == "requirements_testing_alignment" %}
+    <p><strong>How do you align software testing with requirements?</strong></p>
+
+     {% elif name == "assumption" %}
+    <p><strong>If you are in a situation where you lack information and have to make an assumption to proceed in your project, what do you typically do?
+</strong></p>
+
+     {% elif name == "requirements_documentation" %}
     <p><strong>How do you document requirements?</strong></p>
 
     {% elif name == "no_documentation_reasons" %}

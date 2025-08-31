@@ -147,12 +147,17 @@ def survey():
             'team_customer_relationship': int(request.form['team_customer_relationship']),
             'failed_documentation': request.form['failed_documentation'],
             'team_communication': int(request.form['team_communication']),
+            'communication_with_other_teams': int(request.form['communication_with_other_teams']),
             'project_method': request.form['project_method'],
             'meeting_frequency': request.form['meeting_frequency'],
             'user_feedback_frequency': request.form['user_feedback_frequency'],
             'assumption': request.form['assumption'],
             'common_problem': request.form['common_problem'],
             'requirements_elicitation': request.form['requirements_elicitation'],
+            'doc_willing': request.form['doc_willing'],
+            'doc_unwilling_but_produce': request.form['doc_unwilling_but_produce'],
+            'doc_dont_produce': request.form['doc_dont_produce'],
+            'requirements_testing_alignment': " / ".join(request.form.getlist('requirements_testing_alignment')),
             'elicitation_techniques': " / ".join(request.form.getlist('elicitation_techniques')),
             'explicit_distinction': " / ".join(request.form.getlist('explicit_distinction')),
             'requirements_documentation': " / ".join(request.form.getlist('requirements_documentation')),
@@ -250,14 +255,12 @@ def results():
     plot_dir = 'static'
     os.makedirs(plot_dir, exist_ok=True)
 
-    columns_to_plot = [
-        'team_customer_relationship', 'failed_documentation', 'team_communication', 'role',
-        'industry', 'country', 'team_size', 'external_partners',
-        'project_distribution', 'work', 'project_method', 'meeting_frequency',
-        'user_feedback_frequency', 'common_problem', 'top2', 'top3', 'top4', 'top5',
-        'requirements_elicitation', 'elicitation_techniques',
-        'explicit_distinction', 'requirements_documentation',
-        'no_documentation_reasons', 'non_functional_requirements'
+    columns_to_plot = [ 'country', 'team_size', 'industry',  'external_partners',  'project_distribution', 'work','role',
+        'team_customer_relationship', 'team_communication', 'communication_with_other_teams' ,  'project_method', 'meeting_frequency',  
+        'user_feedback_frequency',  'requirements_elicitation', 'elicitation_techniques', 'assumption', 'doc_willing', 'doc_unwilling_but_produce', 'doc_dont_produce',
+         'non_functional_requirements',  'explicit_distinction', 'failed_documentation',   'requirements_documentation', 'no_documentation_reasons',  'common_problem', 'top2', 'top3', 'top4', 'top5', 
+      
+       
     ]
 
     for column in columns_to_plot:
@@ -269,8 +272,8 @@ def results():
 
         if column in ["elicitation_techniques", "explicit_distinction",
                       "requirements_documentation", "no_documentation_reasons",
-                      "non_functional_requirements"]:
-            plt.figure(figsize=(18, 12))
+                      "non_functional_requirements", "requirements_testing_alignment"]:
+            plt.figure(figsize=(22, 12))
             all_values = []
             for entry in filtered_df[column].dropna():
                 parts = [p.strip() for p in str(entry).split("/") if p.strip()]
@@ -278,7 +281,7 @@ def results():
             values = pd.Series(all_values).value_counts().sort_index()
             selected_answers = [p.strip() for p in str(user_response.get(column, "")).split("/") if p.strip()]
         else:
-            plt.figure(figsize=(12, 8))
+            plt.figure(figsize=(22, 12))
             if pd.api.types.is_numeric_dtype(filtered_df[column]):
                 values = filtered_df[column].value_counts().sort_index()
             else:
@@ -296,7 +299,7 @@ def results():
         plt.xticks(rotation=60 if column in [
             "elicitation_techniques", "explicit_distinction",
             "requirements_documentation", "no_documentation_reasons",
-            "non_functional_requirements"
+            "non_functional_requirements" , "requirements_testing_alignment"
         ] else 45, ha='right')
         plt.tight_layout()
 
