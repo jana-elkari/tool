@@ -11,7 +11,7 @@ app.secret_key = secrets.token_hex(32)
 
 matplotlib.use('Agg')
 
-# === Files ===
+# read csv files with responses and causal effects
 CSV_FILE = 'users.csv'
 CAUSAL_EFFECTS_CSV = 'model_outputs/causal_effects.csv'
 
@@ -19,7 +19,7 @@ CAUSAL_EFFECTS_CSV = 'model_outputs/causal_effects.csv'
 causal_df = pd.read_csv(CAUSAL_EFFECTS_CSV, encoding='utf-8-sig') if os.path.exists(CAUSAL_EFFECTS_CSV) else pd.DataFrame()
 print("Loaded causal_effects.csv rows:", len(causal_df) if not causal_df.empty else 0)
 
-# === Country → Continent mapping ===
+# coutry to continent mapping for peer companies definition
 COUNTRY_TO_CONTINENT = {
     "Argentina": "South America",
     "Australia": "Oceania",
@@ -49,6 +49,7 @@ def get_collaborative_recommendation(df, current_user_response):
         return [f"No continent mapping available for '{current_user_response['country']}'."], pd.DataFrame()
 
     team_size = current_user_response['team_size']
+    #peer companies based on team size are those 25% close to the user input
     min_size, max_size = team_size * 0.75, team_size * 1.25
 
     df = df.copy()
@@ -185,7 +186,7 @@ def results():
     if not user_response:
         return redirect(url_for('survey'))
 
-    # === Filters ===
+    #filters
     filter_country = request.args.get('filter_country')
     filter_industry = request.args.get('filter_industry')
     filter_role = request.args.get('filter_role')
@@ -213,7 +214,7 @@ def results():
     recommendation = causal_recs if causal_recs else []
     statistics = collab_recs if collab_recs else []
 
-    # === Sankey Diagram ===
+    # alluvial diagram
     sankey_html = None
     if causal_edges:
         problems = list({p for p, t, e in causal_edges})
@@ -250,7 +251,6 @@ def results():
         )
         sankey_html = fig.to_html(full_html=False)
 
-    # === Visualizations with caching ===
     plots = {}
     plot_dir = 'static'
     os.makedirs(plot_dir, exist_ok=True)

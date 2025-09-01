@@ -34,7 +34,6 @@
 </div>
 {% endif %}
 
-    <!-- === Peer Company Benchmarking === -->
     {% if peers is not none and peers.shape[0] > 0 %}
     <div class="recommendation-box">
         <h3>Peer Company Benchmarking</h3>
@@ -68,7 +67,6 @@
     </div>
     {% endif %}
 
-    <!-- === External Resources (Always Visible) === -->
     <div class="recommendation-box">
         <h3>External Resources</h3>
         <ul class="recommendation-list">
@@ -85,7 +83,6 @@
         </ul>
     </div>
 
-    <!-- === Filter Form === -->
     <form method="GET" class="filter-form">
       <h3>Filter Benchmark Visuals</h3>
 
@@ -141,7 +138,6 @@
       <button type="submit">Apply Filters</button>
     </form>
 
-    <!-- === Benchmark Visuals === -->
     {% if plots %}
     <div class="benchmarks">
       <h3>Benchmark Visuals</h3>
