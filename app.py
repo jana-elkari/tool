@@ -1,22 +1,18 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 import plotly.graph_objects as go
+import plotly.express as px
 import pandas as pd
-import matplotlib
-import matplotlib.pyplot as plt
 import secrets
 import os
-import io, base64
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
-
-matplotlib.use('Agg')
 
 # === Files ===
 CSV_FILE = 'users.csv'
 CAUSAL_EFFECTS_CSV = 'model_outputs/causal_effects.csv'
 
-# === Load global datasets once ===
+# === Load datasets once ===
 global_df = pd.read_csv(CSV_FILE) if os.path.exists(CSV_FILE) else pd.DataFrame()
 causal_df = pd.read_csv(CAUSAL_EFFECTS_CSV, encoding='utf-8-sig') if os.path.exists(CAUSAL_EFFECTS_CSV) else pd.DataFrame()
 print("Loaded users.csv rows:", len(global_df))
@@ -56,17 +52,6 @@ def get_collaborative_recommendation(df, current_user_response):
 
     df = df.copy()
     df['continent'] = df['country'].map(COUNTRY_TO_CONTINENT)
-
-    # exclude identical record
-    df = df[
-        ~(
-            (df['country'] == current_user_response['country']) &
-            (df['industry'] == current_user_response['industry']) &
-            (df['team_size'] == current_user_response['team_size']) &
-            (df['team_customer_relationship'] == current_user_response['team_customer_relationship']) &
-            (df['team_communication'] == current_user_response['team_communication'])
-        )
-    ]
 
     peers = df[
         (df['continent'] == user_continent) &
@@ -129,7 +114,6 @@ def get_causal_recommendation(user_response, causal_df):
 
     return recs, edges
 
-# === Plot generation (base64, in memory) ===
 def generate_all_plots(filtered_df, user_response):
     plots = {}
     columns_to_plot = [
@@ -144,36 +128,39 @@ def generate_all_plots(filtered_df, user_response):
     ]
 
     for column in columns_to_plot:
-        plt.figure(figsize=(10, 6))
-
+        # handle multi-select questions (split on "/")
         if column in ["elicitation_techniques", "explicit_distinction",
                       "requirements_documentation", "no_documentation_reasons",
                       "non_functional_requirements", "requirements_testing_alignment"]:
             all_values = []
             for entry in filtered_df[column].dropna():
                 all_values.extend([p.strip() for p in str(entry).split("/") if p.strip()])
-            values = pd.Series(all_values).value_counts().sort_index()
-            selected_answers = [p.strip() for p in str(user_response.get(column, "")).split("/") if p.strip()]
+            values = pd.Series(all_values).value_counts().reset_index()
+            values.columns = [column, "count"]
         else:
-            values = filtered_df[column].value_counts().sort_index()
-            selected_answers = [str(user_response.get(column))]
+            values = filtered_df[column].value_counts().reset_index()
+            values.columns = [column, "count"]
 
-        bars, heights = values.index.tolist(), values.values.tolist()
-        colors = ['yellow' if str(bar) in selected_answers else 'blue' for bar in bars]
+        # highlight user answer if available
+        user_answer = str(user_response.get(column))
+        values["selected"] = values[column].astype(str) == user_answer
 
-        plt.bar(bars, heights, color=colors)
-        plt.xticks(rotation=45, ha='right')
-        plt.title(column.replace("_", " ").title())
-        plt.tight_layout()
+        # Plotly bar chart
+        fig = px.bar(values, x=column, y="count",
+                     title=column.replace("_", " ").title(),
+                     color="selected",
+                     color_discrete_map={True: "yellow", False: "blue"})
 
-        buf = io.BytesIO()
-        plt.savefig(buf, format="png", dpi=80)
-        plt.close()
-        buf.seek(0)
+        fig.update_layout(
+            showlegend=False,
+            xaxis_tickangle=-45,
+            margin=dict(l=20, r=20, t=40, b=80)
+        )
 
-        plots[column] = base64.b64encode(buf.read()).decode("utf-8")
+        plots[column] = fig.to_html(full_html=False)
 
     return plots
+
 
 # === Routes ===
 @app.route('/')
@@ -265,7 +252,8 @@ def results():
 
         fig = go.Figure()
         fig.add_trace(go.Sankey(
-            node=dict(pad=20, thickness=20, line=dict(color="black", width=0.5), label=labels, align="left", color="lightblue"),
+            node=dict(pad=20, thickness=20, line=dict(color="black", width=0.5),
+                      label=labels, align="left", color="lightblue"),
             link=dict(source=sources, target=targets, value=values, color=colors)
         ))
         fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers',
@@ -279,7 +267,7 @@ def results():
                                       bordercolor="black", borderwidth=1))
         sankey_html = fig.to_html(full_html=False)
 
-    # Generate plots (all columns)
+    # Generate Plotly plots
     plots = generate_all_plots(filtered_df, user_response)
 
     return render_template(

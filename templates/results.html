@@ -9,7 +9,6 @@
   <div class="container">
     <h2>Results</h2>
 
-
     {% if sankey_html %}
     <div class="recommendation-box">
       <h3>Causal Recommender Visualization</h3>
@@ -26,7 +25,6 @@
           <strong>same industry</strong>, and of 
           <strong>similar team size</strong> (±25%).
         </p>
-
         {% if statistics and statistics|length > 0 %}
         <ul class="recommendation-list">
             {% for stat in statistics %}
@@ -50,25 +48,8 @@
     </div>
     {% endif %}
 
-    <div class="recommendation-box">
-        <h3>External Resources</h3>
-        <ul class="recommendation-list">
-            <li><span style="color:blue;">🔗</span> 
-                <a href="https://se-toolbox.info" target="_blank">
-                    Fortiss S4KMU Project
-                </a> : learning platform for SMEs to guide RE practices.
-            </li>
-            <li><span style="color:blue;">🔗</span> 
-                <a href="http://napire.org/#/home" target="_blank">
-                    NaPiRE Website
-                </a> : publications and insights from the NaPiRE initiative.
-            </li>
-        </ul>
-    </div>
-
     <form method="GET" class="filter-form">
       <h3>Filter Benchmark Visuals</h3>
-
       <label for="filter_country">Filter by Country:</label>
       <select name="filter_country">
         <option value="">All</option>
@@ -116,7 +97,6 @@
           <option value="{{ d }}" {% if filter_distribution == d %}selected{% endif %}>{{ d }}</option>
         {% endfor %}
       </select>
-
       <button type="submit">Apply Filters</button>
     </form>
 
@@ -124,7 +104,7 @@
     <div class="benchmarks">
       <h3>Benchmark Visuals</h3>
       <div class="plot-grid">
-        {% for name, img in plots.items() %}
+        {% for name, plot_html in plots.items() %}
         <div class="plot-card">
           {% if name == "team_size" %}
             <p><strong>How many people are involved in your project?</strong></p>
@@ -189,9 +169,11 @@
           {% else %}
             <p><strong>{{ name.replace('_',' ').title() }}</strong></p>
           {% endif %}
-          
-          <!-- ✅ Base64 plot instead of static path -->
-          <img src="data:image/png;base64,{{ img }}" alt="{{ name }}">
+
+          <!-- ✅ Insert Plotly plot -->
+          <div class="plotly-plot">
+            {{ plot_html | safe }}
+          </div>
         </div>
         {% endfor %}
       </div>
