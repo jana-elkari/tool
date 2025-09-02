@@ -157,7 +157,7 @@ def generate_all_plots(filtered_df, user_response):
             margin=dict(l=20, r=20, t=40, b=80)
         )
 
-        plots[column] = fig.to_html(full_html=False)
+        plots[column] = fig.to_html(full_html=False, include_plotlyjs=False)
 
     return plots
 
