@@ -95,7 +95,7 @@ def get_causal_recommendation(user_response, causal_df):
     if causal_df.empty:
         return None, None
 
-    problems = [user_response.get('top1'), user_response.get('top2'), user_response.get('top3')]
+    problems = [user_response.get('top1'), user_response.get('top2'), user_response.get('top3'), user_response.get('top4'), user_response.get('top5')]
     recs = []
     edges = []
 
