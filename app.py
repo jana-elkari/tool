@@ -19,7 +19,7 @@ CAUSAL_EFFECTS_CSV = 'model_outputs/causal_effects.csv'
 causal_df = pd.read_csv(CAUSAL_EFFECTS_CSV, encoding='utf-8-sig') if os.path.exists(CAUSAL_EFFECTS_CSV) else pd.DataFrame()
 print("Loaded causal_effects.csv rows:", len(causal_df) if not causal_df.empty else 0)
 
-# coutry to continent mapping for peer companies definition
+# country to continent mapping for peer companies definition
 COUNTRY_TO_CONTINENT = {
     "Argentina": "South America",
     "Australia": "Oceania",
@@ -49,7 +49,6 @@ def get_collaborative_recommendation(df, current_user_response):
         return [f"No continent mapping available for '{current_user_response['country']}'."], pd.DataFrame()
 
     team_size = current_user_response['team_size']
-    #peer companies based on team size are those 25% close to the user input
     min_size, max_size = team_size * 0.75, team_size * 1.25
 
     df = df.copy()
@@ -186,7 +185,7 @@ def results():
     if not user_response:
         return redirect(url_for('survey'))
 
-    #filters
+    # filters
     filter_country = request.args.get('filter_country')
     filter_industry = request.args.get('filter_industry')
     filter_role = request.args.get('filter_role')
@@ -209,7 +208,7 @@ def results():
         filtered_df = filtered_df[filtered_df['project_distribution'] == filter_distribution]
 
     causal_recs, causal_edges = get_causal_recommendation(user_response, causal_df)
-    collab_recs, peers_df = get_collaborative_recommendation(df, user_response)
+    collab_recs, peers_df = get_collaborative_recommendation(filtered_df, user_response)
 
     recommendation = causal_recs if causal_recs else []
     statistics = collab_recs if collab_recs else []
@@ -227,7 +226,10 @@ def results():
         values = [abs(e) * 100 for p, t, e in causal_edges]
         colors = ["lightgreen" if e < 0 else "lightcoral" for p, t, e in causal_edges]
 
-        fig = go.Figure(data=[go.Sankey(
+        fig = go.Figure()
+
+        # Sankey diagram
+        fig.add_trace(go.Sankey(
             node=dict(
                 pad=20,
                 thickness=20,
@@ -242,12 +244,31 @@ def results():
                 value=values,
                 color=colors
             )
-        )])
+        ))
+
+        # Legend
+        fig.add_trace(go.Scatter(
+            x=[None], y=[None],
+            mode='markers',
+            marker=dict(size=15, color="lightgreen"),
+            name="Decrease problem"
+        ))
+        fig.add_trace(go.Scatter(
+            x=[None], y=[None],
+            mode='markers',
+            marker=dict(size=15, color="lightcoral"),
+            name="Increase problem"
+        ))
 
         fig.update_layout(
             title_text="Causal Recommender Alluvial Diagram",
             font=dict(size=12, color="black"),
-            margin=dict(r=200, t=50, b=50, l=50)
+            margin=dict(r=200, t=50, b=50, l=50),
+            legend=dict(
+                x=1.05, y=1,
+                bgcolor="rgba(255,255,255,0.7)",
+                bordercolor="black", borderwidth=1
+            )
         )
         sankey_html = fig.to_html(full_html=False)
 
@@ -255,25 +276,24 @@ def results():
     plot_dir = 'static'
     os.makedirs(plot_dir, exist_ok=True)
 
-    columns_to_plot = [ 'country', 'team_size', 'industry',  'external_partners',  'project_distribution', 'work','role',
-        'team_customer_relationship', 'team_communication', 'communication_with_other_teams' ,  'project_method', 'meeting_frequency',  
-        'user_feedback_frequency',  'requirements_elicitation', 'elicitation_techniques', 'assumption', 'doc_willing', 'doc_unwilling_but_produce', 'doc_dont_produce',
-         'non_functional_requirements',  'explicit_distinction', 'failed_documentation',   'requirements_documentation', 'no_documentation_reasons',  'common_problem', 'top2', 'top3', 'top4', 'top5', 
-      
-       
+    columns_to_plot = [
+        'country', 'team_size', 'industry', 'external_partners', 'project_distribution',
+        'work', 'role', 'team_customer_relationship', 'team_communication',
+        'communication_with_other_teams', 'project_method', 'meeting_frequency',
+        'user_feedback_frequency', 'requirements_elicitation', 'elicitation_techniques',
+        'assumption', 'doc_willing', 'doc_unwilling_but_produce', 'doc_dont_produce',
+        'non_functional_requirements', 'explicit_distinction', 'failed_documentation',
+        'requirements_documentation', 'no_documentation_reasons', 'common_problem',
+        'top2', 'top3', 'top4', 'top5'
     ]
 
     for column in columns_to_plot:
         path = os.path.join(plot_dir, f'{column}.png')
 
-        if os.path.exists(path):
-            plots[column] = f'{column}.png'
-            continue
-
+        plt.figure(figsize=(22, 12))
         if column in ["elicitation_techniques", "explicit_distinction",
                       "requirements_documentation", "no_documentation_reasons",
                       "non_functional_requirements", "requirements_testing_alignment"]:
-            plt.figure(figsize=(22, 12))
             all_values = []
             for entry in filtered_df[column].dropna():
                 parts = [p.strip() for p in str(entry).split("/") if p.strip()]
@@ -281,7 +301,6 @@ def results():
             values = pd.Series(all_values).value_counts().sort_index()
             selected_answers = [p.strip() for p in str(user_response.get(column, "")).split("/") if p.strip()]
         else:
-            plt.figure(figsize=(22, 12))
             if pd.api.types.is_numeric_dtype(filtered_df[column]):
                 values = filtered_df[column].value_counts().sort_index()
             else:
@@ -292,21 +311,15 @@ def results():
         heights = values.values.tolist()
         colors = ['yellow' if str(bar) in selected_answers else 'blue' for bar in bars]
 
-        plt.rcParams.update({'font.size': 14})
         plt.bar(bars, heights, color=colors)
         plt.title(column.replace('_', ' ').title())
         plt.ylabel('Count')
-        plt.xticks(rotation=60 if column in [
-            "elicitation_techniques", "explicit_distinction",
-            "requirements_documentation", "no_documentation_reasons",
-            "non_functional_requirements" , "requirements_testing_alignment"
-        ] else 45, ha='right')
+        plt.xticks(rotation=45, ha='right')
         plt.tight_layout()
 
         plt.savefig(path, dpi=80)
         plots[column] = f'{column}.png'
-        plt.clf()
-        plt.close('all')
+        plt.close()
 
     return render_template(
         'results.html',
