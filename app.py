@@ -5,21 +5,24 @@ import matplotlib
 import matplotlib.pyplot as plt
 import secrets
 import os
+import io, base64
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
 
 matplotlib.use('Agg')
 
-# read csv files with responses and causal effects
+# === Files ===
 CSV_FILE = 'users.csv'
 CAUSAL_EFFECTS_CSV = 'model_outputs/causal_effects.csv'
 
-# Load causal effects once at startup
+# === Load global datasets once ===
+global_df = pd.read_csv(CSV_FILE) if os.path.exists(CSV_FILE) else pd.DataFrame()
 causal_df = pd.read_csv(CAUSAL_EFFECTS_CSV, encoding='utf-8-sig') if os.path.exists(CAUSAL_EFFECTS_CSV) else pd.DataFrame()
-print("Loaded causal_effects.csv rows:", len(causal_df) if not causal_df.empty else 0)
+print("Loaded users.csv rows:", len(global_df))
+print("Loaded causal_effects.csv rows:", len(causal_df))
 
-# country to continent mapping for peer companies definition
+# === Country → Continent mapping ===
 COUNTRY_TO_CONTINENT = {
     "Argentina": "South America",
     "Australia": "Oceania",
@@ -42,11 +45,11 @@ COUNTRY_TO_CONTINENT = {
     "United States": "North America"
 }
 
-
+# === Collaborative recommender ===
 def get_collaborative_recommendation(df, current_user_response):
     user_continent = COUNTRY_TO_CONTINENT.get(current_user_response['country'], None)
     if not user_continent:
-        return [f"No continent mapping available for '{current_user_response['country']}'."], pd.DataFrame()
+        return [f"No continent mapping for '{current_user_response['country']}'."], pd.DataFrame()
 
     team_size = current_user_response['team_size']
     min_size, max_size = team_size * 0.75, team_size * 1.25
@@ -54,6 +57,7 @@ def get_collaborative_recommendation(df, current_user_response):
     df = df.copy()
     df['continent'] = df['country'].map(COUNTRY_TO_CONTINENT)
 
+    # exclude identical record
     df = df[
         ~(
             (df['country'] == current_user_response['country']) &
@@ -63,40 +67,44 @@ def get_collaborative_recommendation(df, current_user_response):
             (df['team_communication'] == current_user_response['team_communication'])
         )
     ]
+
     peers = df[
         (df['continent'] == user_continent) &
         (df['industry'] == current_user_response['industry']) &
         (df['team_size'].astype(float).between(min_size, max_size))
     ]
-    print('peers are here', peers)
 
     if peers.empty:
-        return [f"No peer companies available in {user_continent}, {current_user_response['industry']} with similar size."], pd.DataFrame()
+        return [f"No peer companies in {user_continent}, {current_user_response['industry']}."], pd.DataFrame()
 
     avg_customer_rel = peers['team_customer_relationship'].astype(float).mean()
     avg_team_comm = peers['team_communication'].astype(float).mean()
 
     advice = []
     if current_user_response['team_customer_relationship'] <= avg_customer_rel:
-        advice.append(f"Your team-customer relationship ({current_user_response['team_customer_relationship']}) is below peers ({avg_customer_rel:.2f}).")
-    elif current_user_response['team_customer_relationship'] > avg_customer_rel:
-        advice.append(f"Your team-customer relationship ({current_user_response['team_customer_relationship']}) is above peers ({avg_customer_rel:.2f}).")
+        advice.append(f"Your team-customer relationship ({current_user_response['team_customer_relationship']}) "
+                      f"is below peers ({avg_customer_rel:.2f}).")
+    else:
+        advice.append(f"Your team-customer relationship ({current_user_response['team_customer_relationship']}) "
+                      f"is above peers ({avg_customer_rel:.2f}).")
 
     if current_user_response['team_communication'] <= avg_team_comm:
-        advice.append(f"Your internal communication ({current_user_response['team_communication']}) is below peers ({avg_team_comm:.2f}).")
-    elif current_user_response['team_communication'] >= avg_team_comm:
-        advice.append(f"Your internal communication ({current_user_response['team_communication']}) is above peers ({avg_team_comm:.2f}).")
+        advice.append(f"Your internal communication ({current_user_response['team_communication']}) "
+                      f"is below peers ({avg_team_comm:.2f}).")
+    else:
+        advice.append(f"Your internal communication ({current_user_response['team_communication']}) "
+                      f"is above peers ({avg_team_comm:.2f}).")
 
     return advice, peers
 
-
+# === Causal recommender ===
 def get_causal_recommendation(user_response, causal_df):
     if causal_df.empty:
         return None, None
 
-    problems = [user_response.get('top1'), user_response.get('top2'), user_response.get('top3'), user_response.get('top4'), user_response.get('top5')]
-    recs = []
-    edges = []
+    problems = [user_response.get('top1'), user_response.get('top2'),
+                user_response.get('top3'), user_response.get('top4'), user_response.get('top5')]
+    recs, edges = [], []
 
     for problem in problems:
         if not problem:
@@ -104,7 +112,7 @@ def get_causal_recommendation(user_response, causal_df):
 
         matches = causal_df[causal_df['Problem'] == problem]
         if matches.empty:
-            recs.append(f"No causal recommendations available for '{problem}'.")
+            recs.append(f"No causal recommendations for '{problem}'.")
             continue
 
         for _, row in matches.iterrows():
@@ -113,27 +121,71 @@ def get_causal_recommendation(user_response, causal_df):
             percentage = abs(effect) * 100
 
             if effect < 0:
-                recs.append(f"Improving {treatment} is likely to DECREASE the '{problem}' problem (strength {percentage:.1f}%).")
+                recs.append(f"Improving {treatment} is likely to DECREASE '{problem}' (strength {percentage:.1f}%).")
             else:
-                recs.append(f"Improving {treatment} is likely to INCREASE the '{problem}' problem (strength {percentage:.1f}%).")
+                recs.append(f"Improving {treatment} is likely to INCREASE '{problem}' (strength {percentage:.1f}%).")
 
             edges.append((problem, treatment, effect))
 
     return recs, edges
 
+# === Plot generation (base64, in memory) ===
+def generate_all_plots(filtered_df, user_response):
+    plots = {}
+    columns_to_plot = [
+        'country', 'team_size', 'industry', 'external_partners', 'project_distribution',
+        'work', 'role', 'team_customer_relationship', 'team_communication',
+        'communication_with_other_teams', 'project_method', 'meeting_frequency',
+        'user_feedback_frequency', 'requirements_elicitation', 'elicitation_techniques',
+        'assumption', 'doc_willing', 'doc_unwilling_but_produce', 'doc_dont_produce',
+        'non_functional_requirements', 'explicit_distinction', 'failed_documentation',
+        'requirements_documentation', 'no_documentation_reasons', 'common_problem',
+        'top2', 'top3', 'top4', 'top5'
+    ]
 
+    for column in columns_to_plot:
+        plt.figure(figsize=(10, 6))
+
+        if column in ["elicitation_techniques", "explicit_distinction",
+                      "requirements_documentation", "no_documentation_reasons",
+                      "non_functional_requirements", "requirements_testing_alignment"]:
+            all_values = []
+            for entry in filtered_df[column].dropna():
+                all_values.extend([p.strip() for p in str(entry).split("/") if p.strip()])
+            values = pd.Series(all_values).value_counts().sort_index()
+            selected_answers = [p.strip() for p in str(user_response.get(column, "")).split("/") if p.strip()]
+        else:
+            values = filtered_df[column].value_counts().sort_index()
+            selected_answers = [str(user_response.get(column))]
+
+        bars, heights = values.index.tolist(), values.values.tolist()
+        colors = ['yellow' if str(bar) in selected_answers else 'blue' for bar in bars]
+
+        plt.bar(bars, heights, color=colors)
+        plt.xticks(rotation=45, ha='right')
+        plt.title(column.replace("_", " ").title())
+        plt.tight_layout()
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format="png", dpi=80)
+        plt.close()
+        buf.seek(0)
+
+        plots[column] = base64.b64encode(buf.read()).decode("utf-8")
+
+    return plots
+
+# === Routes ===
 @app.route('/')
 def intro():
     return render_template('intro.html')
 
-
 @app.route('/survey', methods=['GET', 'POST'])
 def survey():
-    df = pd.read_csv(CSV_FILE) if os.path.exists(CSV_FILE) else pd.DataFrame()
-    if 'team_size' in df.columns:
-        df['team_size'] = pd.to_numeric(df['team_size'], errors='coerce').astype('Int64')
-    industries = sorted(df['industry'].unique()) if not df.empty else []
-    countries = sorted(df['country'].unique()) if not df.empty else []
+    global global_df
+
+    industries = sorted(global_df['industry'].dropna().unique()) if not global_df.empty else []
+    countries = sorted(global_df['country'].dropna().unique()) if not global_df.empty else []
 
     if request.method == 'POST':
         response = {
@@ -170,42 +222,27 @@ def survey():
         }
 
         session['user_response'] = response
-        df = pd.concat([df, pd.DataFrame([response])], ignore_index=True)
-        df.to_csv(CSV_FILE, index=False)
+        global_df = pd.concat([global_df, pd.DataFrame([response])], ignore_index=True)
+        global_df.to_csv(CSV_FILE, index=False)
 
         return redirect(url_for('results'))
 
     return render_template('survey.html', countries=countries, industries=industries)
 
-
 @app.route('/results')
 def results():
-    df = pd.read_csv(CSV_FILE) if os.path.exists(CSV_FILE) else pd.DataFrame()
     user_response = session.get('user_response')
     if not user_response:
         return redirect(url_for('survey'))
 
     # filters
-    filter_country = request.args.get('filter_country')
-    filter_industry = request.args.get('filter_industry')
-    filter_role = request.args.get('filter_role')
-    filter_method = request.args.get('filter_method')
-    filter_partners = request.args.get('filter_partners')
-    filter_distribution = request.args.get('filter_distribution')
-
-    filtered_df = df.copy()
-    if filter_country:
-        filtered_df = filtered_df[filtered_df['country'] == filter_country]
-    if filter_industry:
-        filtered_df = filtered_df[filtered_df['industry'] == filter_industry]
-    if filter_role:
-        filtered_df = filtered_df[filtered_df['role'] == filter_role]
-    if filter_method:
-        filtered_df = filtered_df[filtered_df['project_method'] == filter_method]
-    if filter_partners:
-        filtered_df = filtered_df[filtered_df['external_partners'] == filter_partners]
-    if filter_distribution:
-        filtered_df = filtered_df[filtered_df['project_distribution'] == filter_distribution]
+    filtered_df = global_df.copy()
+    if (fc := request.args.get('filter_country')): filtered_df = filtered_df[filtered_df['country'] == fc]
+    if (fi := request.args.get('filter_industry')): filtered_df = filtered_df[filtered_df['industry'] == fi]
+    if (fr := request.args.get('filter_role')): filtered_df = filtered_df[filtered_df['role'] == fr]
+    if (fm := request.args.get('filter_method')): filtered_df = filtered_df[filtered_df['project_method'] == fm]
+    if (fp := request.args.get('filter_partners')): filtered_df = filtered_df[filtered_df['external_partners'] == fp]
+    if (fd := request.args.get('filter_distribution')): filtered_df = filtered_df[filtered_df['project_distribution'] == fd]
 
     causal_recs, causal_edges = get_causal_recommendation(user_response, causal_df)
     collab_recs, peers_df = get_collaborative_recommendation(filtered_df, user_response)
@@ -213,7 +250,7 @@ def results():
     recommendation = causal_recs if causal_recs else []
     statistics = collab_recs if collab_recs else []
 
-    # alluvial diagram
+    # Sankey diagram
     sankey_html = None
     if causal_edges:
         problems = list({p for p, t, e in causal_edges})
@@ -227,99 +264,23 @@ def results():
         colors = ["lightgreen" if e < 0 else "lightcoral" for p, t, e in causal_edges]
 
         fig = go.Figure()
-
-        # Sankey diagram
         fig.add_trace(go.Sankey(
-            node=dict(
-                pad=20,
-                thickness=20,
-                line=dict(color="black", width=0.5),
-                label=labels,
-                align="left",
-                color="lightblue"
-            ),
-            link=dict(
-                source=sources,
-                target=targets,
-                value=values,
-                color=colors
-            )
+            node=dict(pad=20, thickness=20, line=dict(color="black", width=0.5), label=labels, align="left", color="lightblue"),
+            link=dict(source=sources, target=targets, value=values, color=colors)
         ))
-
-        # Legend
-        fig.add_trace(go.Scatter(
-            x=[None], y=[None],
-            mode='markers',
-            marker=dict(size=15, color="lightgreen"),
-            name="Decrease problem"
-        ))
-        fig.add_trace(go.Scatter(
-            x=[None], y=[None],
-            mode='markers',
-            marker=dict(size=15, color="lightcoral"),
-            name="Increase problem"
-        ))
-
-        fig.update_layout(
-            title_text="Causal Recommender Alluvial Diagram",
-            font=dict(size=12, color="black"),
-            margin=dict(r=200, t=50, b=50, l=50),
-            legend=dict(
-                x=1.05, y=1,
-                bgcolor="rgba(255,255,255,0.7)",
-                bordercolor="black", borderwidth=1
-            )
-        )
+        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers',
+                                 marker=dict(size=15, color="lightgreen"), name="Decrease problem"))
+        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers',
+                                 marker=dict(size=15, color="lightcoral"), name="Increase problem"))
+        fig.update_layout(title_text="Causal Recommender Alluvial Diagram",
+                          font=dict(size=12, color="black"),
+                          margin=dict(r=200, t=50, b=50, l=50),
+                          legend=dict(x=1.05, y=1, bgcolor="rgba(255,255,255,0.7)",
+                                      bordercolor="black", borderwidth=1))
         sankey_html = fig.to_html(full_html=False)
 
-    plots = {}
-    plot_dir = 'static'
-    os.makedirs(plot_dir, exist_ok=True)
-
-    columns_to_plot = [
-        'country', 'team_size', 'industry', 'external_partners', 'project_distribution',
-        'work', 'role', 'team_customer_relationship', 'team_communication',
-        'communication_with_other_teams', 'project_method', 'meeting_frequency',
-        'user_feedback_frequency', 'requirements_elicitation', 'elicitation_techniques',
-        'assumption', 'doc_willing', 'doc_unwilling_but_produce', 'doc_dont_produce',
-        'non_functional_requirements', 'explicit_distinction', 'failed_documentation',
-        'requirements_documentation', 'no_documentation_reasons', 'common_problem',
-        'top2', 'top3', 'top4', 'top5'
-    ]
-
-    for column in columns_to_plot:
-        path = os.path.join(plot_dir, f'{column}.png')
-
-        plt.figure(figsize=(22, 12))
-        if column in ["elicitation_techniques", "explicit_distinction",
-                      "requirements_documentation", "no_documentation_reasons",
-                      "non_functional_requirements", "requirements_testing_alignment"]:
-            all_values = []
-            for entry in filtered_df[column].dropna():
-                parts = [p.strip() for p in str(entry).split("/") if p.strip()]
-                all_values.extend(parts)
-            values = pd.Series(all_values).value_counts().sort_index()
-            selected_answers = [p.strip() for p in str(user_response.get(column, "")).split("/") if p.strip()]
-        else:
-            if pd.api.types.is_numeric_dtype(filtered_df[column]):
-                values = filtered_df[column].value_counts().sort_index()
-            else:
-                values = filtered_df[column].value_counts()
-            selected_answers = [str(user_response.get(column))]
-
-        bars = values.index.tolist()
-        heights = values.values.tolist()
-        colors = ['yellow' if str(bar) in selected_answers else 'blue' for bar in bars]
-
-        plt.bar(bars, heights, color=colors)
-        plt.title(column.replace('_', ' ').title())
-        plt.ylabel('Count')
-        plt.xticks(rotation=45, ha='right')
-        plt.tight_layout()
-
-        plt.savefig(path, dpi=80)
-        plots[column] = f'{column}.png'
-        plt.close()
+    # Generate plots (all columns)
+    plots = generate_all_plots(filtered_df, user_response)
 
     return render_template(
         'results.html',
@@ -328,20 +289,19 @@ def results():
         plots=plots,
         peers=peers_df,
         sankey_html=sankey_html,
-        countries=sorted(df['country'].unique()) if not df.empty else [],
-        industries=sorted(df['industry'].unique()) if not df.empty else [],
-        roles=sorted(df['role'].dropna().unique()) if not df.empty else [],
-        methods=sorted(df['project_method'].dropna().unique()) if not df.empty else [],
-        partners=sorted(df['external_partners'].dropna().unique()) if not df.empty else [],
-        distributions=sorted(df['project_distribution'].dropna().unique()) if not df.empty else [],
-        filter_country=filter_country,
-        filter_industry=filter_industry,
-        filter_role=filter_role,
-        filter_method=filter_method,
-        filter_partners=filter_partners,
-        filter_distribution=filter_distribution
+        countries=sorted(global_df['country'].dropna().unique()) if not global_df.empty else [],
+        industries=sorted(global_df['industry'].dropna().unique()) if not global_df.empty else [],
+        roles=sorted(global_df['role'].dropna().unique()) if not global_df.empty else [],
+        methods=sorted(global_df['project_method'].dropna().unique()) if not global_df.empty else [],
+        partners=sorted(global_df['external_partners'].dropna().unique()) if not global_df.empty else [],
+        distributions=sorted(global_df['project_distribution'].dropna().unique()) if not global_df.empty else [],
+        filter_country=request.args.get('filter_country'),
+        filter_industry=request.args.get('filter_industry'),
+        filter_role=request.args.get('filter_role'),
+        filter_method=request.args.get('filter_method'),
+        filter_partners=request.args.get('filter_partners'),
+        filter_distribution=request.args.get('filter_distribution')
     )
-
 
 if __name__ == '__main__':
     app.run(debug=True)

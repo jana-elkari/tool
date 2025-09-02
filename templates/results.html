@@ -9,30 +9,13 @@
   <div class="container">
     <h2>Results</h2>
 
-    <!-- === Problem-based Recommendations 
-    {% if recommendation and recommendation|length > 0 %}
-    <div class="recommendation-box">
-        <h3>Recommendations based on problems</h3>
-        <ul class="recommendation-list">
-            {% for line in recommendation %}
-            {% if 'DECREASE' in line or 'above' in line %}
-                <li><span style="color:green;">✔</span> {{ line|safe }}</li>
-            {% elif 'INCREASE' in line or 'below' in line %}
-                <li><span style="color:orange;">⚠</span> {{ line|safe }}</li>
-            {% else %}
-                <li><span style="color:orange;">⚠</span> {{ line|safe }}</li>
-            {% endif %}
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}=== -->
 
     {% if sankey_html %}
-<div class="recommendation-box">
-  <h3>Causal Recommender Visualization</h3>
-  {{ sankey_html | safe }}
-</div>
-{% endif %}
+    <div class="recommendation-box">
+      <h3>Causal Recommender Visualization</h3>
+      {{ sankey_html | safe }}
+    </div>
+    {% endif %}
 
     {% if peers is not none and peers.shape[0] > 0 %}
     <div class="recommendation-box">
@@ -103,37 +86,36 @@
       </select>
 
       <label for="filter_role">Filter by Role:</label>
-<select name="filter_role">
-  <option value="">All</option>
-  {% for role in roles %}
-    <option value="{{ role }}" {% if filter_role == role %}selected{% endif %}>{{ role }}</option>
-  {% endfor %}
-</select>
+      <select name="filter_role">
+        <option value="">All</option>
+        {% for role in roles %}
+          <option value="{{ role }}" {% if filter_role == role %}selected{% endif %}>{{ role }}</option>
+        {% endfor %}
+      </select>
 
-<label for="filter_method">Filter by Project Method:</label>
-<select name="filter_method">
-  <option value="">All</option>
-  {% for method in methods %}
-    <option value="{{ method }}" {% if filter_method == method %}selected{% endif %}>{{ method }}</option>
-  {% endfor %}
-</select>
+      <label for="filter_method">Filter by Project Method:</label>
+      <select name="filter_method">
+        <option value="">All</option>
+        {% for method in methods %}
+          <option value="{{ method }}" {% if filter_method == method %}selected{% endif %}>{{ method }}</option>
+        {% endfor %}
+      </select>
 
-<label for="filter_partners">Filter by External Partners:</label>
-<select name="filter_partners">
-  <option value="">All</option>
-  {% for p in partners %}
-    <option value="{{ p }}" {% if filter_partners == p %}selected{% endif %}>{{ p }}</option>
-  {% endfor %}
-</select>
+      <label for="filter_partners">Filter by External Partners:</label>
+      <select name="filter_partners">
+        <option value="">All</option>
+        {% for p in partners %}
+          <option value="{{ p }}" {% if filter_partners == p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
 
-<label for="filter_distribution">Filter by Project Distribution:</label>
-<select name="filter_distribution">
-  <option value="">All</option>
-  {% for d in distributions %}
-    <option value="{{ d }}" {% if filter_distribution == d %}selected{% endif %}>{{ d }}</option>
-  {% endfor %}
-</select>
-
+      <label for="filter_distribution">Filter by Project Distribution:</label>
+      <select name="filter_distribution">
+        <option value="">All</option>
+        {% for d in distributions %}
+          <option value="{{ d }}" {% if filter_distribution == d %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+      </select>
 
       <button type="submit">Apply Filters</button>
     </form>
@@ -142,87 +124,76 @@
     <div class="benchmarks">
       <h3>Benchmark Visuals</h3>
       <div class="plot-grid">
-        {% for name, path in plots.items() %}
-<div class="plot-card">
-  {% if name == "team_size" %}
-    <p><strong>How many people are involved in your project?</strong></p>
-  {% elif name == "role" %}
-    <p><strong>What is the main role you occupy in your project?</strong></p>
-  {% elif name == "industry" %}
-    <p><strong>Please select the main industrial sector of your project or the application domain of the software you build.</strong></p>
-  {% elif name == "team_customer_relationship" %}
-    <p><strong>How would you rate the relationship between your project’s team and its customer? (1–5)</strong></p>
-    {% elif name == "external_partners" %}
-    <p><strong>Does your project involve external partners?</strong></p>
-  {% elif name == "failed_documentation" %}
-    <p><strong>Have you ever failed to document one or more requirements?</strong></p>
-  {% elif name == "project_distribution" %}
-    <p><strong>Is your project distributed?</strong></p>
-  {% elif name == "work" %}
-    <p><strong>Do you tend to work from home, on-site, or both?</strong></p>
-  {% elif name == "requirements_elicitation" %}
-    <p><strong>How are the requirements elicited in your project?</strong></p>
-{% elif name == "elicitation_techniques" %}
-    <p><strong>Which techniques do you use for requirements elicitation? (Select all that apply)</strong></p>
-    {% elif name == "explicit_distinction" %}
-    <p><strong>Which aspects do you explicitly distinguish when specifying requirements? (Select all that apply)</strong></p>
-  {% elif name == "team_communication" %}
-    <p><strong>How would you rate the quality of communication inside your team?</strong></p>
-    {% elif name == "project_method" %}
-    <p><strong>How would you personally characterise the way your project works?</strong></p>
-     {% elif name == "country" %}
-    <p><strong>In which country are you personally located?</strong></p>
-  {% elif name == "common_problem" %}
-    <p><strong>Top 1 Problem (most critical)</strong></p>
-  {% elif name == "user_feedback_frequency" %}
-    <p><strong>How often is user feedback provided?</strong></p>
-
-    {% elif name == "non_functional_requirements" %}
-    <p><strong>Which classes of non-functional requirements do you explicitly consider in your requirements documentation?</strong></p>
-
-      {% elif name == "meeting_frequency" %}
-    <p><strong>How often do members of your team meet, informally by chance meeting or in announced meetings?</strong></p>
-
-    {% elif name == "doc_willing" %}
-    <p><strong>I produce the document willingly because I know it's essential.</strong></p>
-
-    {% elif name == "communication_with_other_teams" %}
-    <p><strong>How would you rate the quality of communication between your team and other teams on the same project?
-</strong></p>
-
-    {% elif name == "doc_unwilling_but_produce" %}
-    <p><strong>I produce the document willingly because I know it's essential.</strong></p>
-
-     {% elif name == "doc_dont_produce" %}
-    <p><strong>I don't produce the document, because the current members of the project do not need it.</strong></p>
-
- {% elif name == "requirements_testing_alignment" %}
-    <p><strong>How do you align software testing with requirements?</strong></p>
-
-     {% elif name == "assumption" %}
-    <p><strong>If you are in a situation where you lack information and have to make an assumption to proceed in your project, what do you typically do?
-</strong></p>
-
-     {% elif name == "requirements_documentation" %}
-    <p><strong>How do you document requirements?</strong></p>
-
-    {% elif name == "no_documentation_reasons" %}
-    <p><strong>Check as many reasons for failing to document requirements that have applied in at least one circumstance.</strong></p>
-  {% elif name == "top2" %}
-    <p><strong>Top 2 Problem (most critical)</strong></p>
-  {% elif name == "top3" %}
-    <p><strong>Top 3 Problem (most critical)</strong></p>
-  {% elif name == "top4" %}
-    <p><strong>Top 4 Problem (most critical)</strong></p>
-  {% elif name == "top5" %}
-    <p><strong>Top 5 Problem (most critical)</strong></p>
-  {% else %}
-    <p><strong>{{ name.replace('_',' ').title() }}</strong></p>
-  {% endif %}
-  <img src="{{ url_for('static', filename=path) }}" alt="{{ name }}">
-</div>
-{% endfor %}
-
+        {% for name, img in plots.items() %}
+        <div class="plot-card">
+          {% if name == "team_size" %}
+            <p><strong>How many people are involved in your project?</strong></p>
+          {% elif name == "role" %}
+            <p><strong>What is the main role you occupy in your project?</strong></p>
+          {% elif name == "industry" %}
+            <p><strong>Please select the main industrial sector of your project or the application domain of the software you build.</strong></p>
+          {% elif name == "team_customer_relationship" %}
+            <p><strong>How would you rate the relationship between your project’s team and its customer? (1–5)</strong></p>
+          {% elif name == "external_partners" %}
+            <p><strong>Does your project involve external partners?</strong></p>
+          {% elif name == "failed_documentation" %}
+            <p><strong>Have you ever failed to document one or more requirements?</strong></p>
+          {% elif name == "project_distribution" %}
+            <p><strong>Is your project distributed?</strong></p>
+          {% elif name == "work" %}
+            <p><strong>Do you tend to work from home, on-site, or both?</strong></p>
+          {% elif name == "requirements_elicitation" %}
+            <p><strong>How are the requirements elicited in your project?</strong></p>
+          {% elif name == "elicitation_techniques" %}
+            <p><strong>Which techniques do you use for requirements elicitation? (Select all that apply)</strong></p>
+          {% elif name == "explicit_distinction" %}
+            <p><strong>Which aspects do you explicitly distinguish when specifying requirements? (Select all that apply)</strong></p>
+          {% elif name == "team_communication" %}
+            <p><strong>How would you rate the quality of communication inside your team?</strong></p>
+          {% elif name == "project_method" %}
+            <p><strong>How would you personally characterise the way your project works?</strong></p>
+          {% elif name == "country" %}
+            <p><strong>In which country are you personally located?</strong></p>
+          {% elif name == "common_problem" %}
+            <p><strong>Top 1 Problem (most critical)</strong></p>
+          {% elif name == "user_feedback_frequency" %}
+            <p><strong>How often is user feedback provided?</strong></p>
+          {% elif name == "non_functional_requirements" %}
+            <p><strong>Which classes of non-functional requirements do you explicitly consider in your requirements documentation?</strong></p>
+          {% elif name == "meeting_frequency" %}
+            <p><strong>How often do members of your team meet, informally by chance meeting or in announced meetings?</strong></p>
+          {% elif name == "doc_willing" %}
+            <p><strong>I produce the document willingly because I know it's essential.</strong></p>
+          {% elif name == "communication_with_other_teams" %}
+            <p><strong>How would you rate the quality of communication between your team and other teams on the same project?</strong></p>
+          {% elif name == "doc_unwilling_but_produce" %}
+            <p><strong>I produce the document unwillingly but still produce it.</strong></p>
+          {% elif name == "doc_dont_produce" %}
+            <p><strong>I don't produce the document, because the current members of the project do not need it.</strong></p>
+          {% elif name == "requirements_testing_alignment" %}
+            <p><strong>How do you align software testing with requirements?</strong></p>
+          {% elif name == "assumption" %}
+            <p><strong>If you are in a situation where you lack information and have to make an assumption to proceed in your project, what do you typically do?</strong></p>
+          {% elif name == "requirements_documentation" %}
+            <p><strong>How do you document requirements?</strong></p>
+          {% elif name == "no_documentation_reasons" %}
+            <p><strong>Check as many reasons for failing to document requirements that have applied in at least one circumstance.</strong></p>
+          {% elif name == "top2" %}
+            <p><strong>Top 2 Problem (most critical)</strong></p>
+          {% elif name == "top3" %}
+            <p><strong>Top 3 Problem (most critical)</strong></p>
+          {% elif name == "top4" %}
+            <p><strong>Top 4 Problem (most critical)</strong></p>
+          {% elif name == "top5" %}
+            <p><strong>Top 5 Problem (most critical)</strong></p>
+          {% else %}
+            <p><strong>{{ name.replace('_',' ').title() }}</strong></p>
+          {% endif %}
+          
+          <!-- ✅ Base64 plot instead of static path -->
+          <img src="data:image/png;base64,{{ img }}" alt="{{ name }}">
+        </div>
+        {% endfor %}
       </div>
     </div>
     {% endif %}
