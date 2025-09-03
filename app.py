@@ -10,13 +10,25 @@ app.secret_key = secrets.token_hex(32)
 
 # === Files ===
 CSV_FILE = 'users.csv'
-CAUSAL_EFFECTS_CSV = 'model_outputs/causal_effects.csv'
+CAUSAL_EFFECTS_CSV = 'model_outputs/causal_effects2.csv'
 
 # === Load datasets once ===
 global_df = pd.read_csv(CSV_FILE) if os.path.exists(CSV_FILE) else pd.DataFrame()
 causal_df = pd.read_csv(CAUSAL_EFFECTS_CSV, encoding='utf-8-sig') if os.path.exists(CAUSAL_EFFECTS_CSV) else pd.DataFrame()
 print("Loaded users.csv rows:", len(global_df))
 print("Loaded causal_effects.csv rows:", len(causal_df))
+
+TREATMENT_DEFINITIONS = {
+    "communication inside team": "How well your project team communicates internally.",
+    "communication between your team and other teams": "Quality of communication across teams working on the same project.",
+    "relationship between team and customer": "Quality of communication between team and customer",
+    "project methodology": "The overall way of working in your project, such as Agile, Hybrid, or Plan-driven.",
+    "Work location set up": "Whether your team works mostly on-site, remotely, or hybrid",
+    "project team distribution across locations": "Whether your project team is geographically distributed.",
+    "Involvement of external partners in company": "Whether external partners are actively involved in your project.",
+    "team_meetings": "The frequency meetings within your project team."
+}
+
 
 # === Country → Continent mapping ===
 COUNTRY_TO_CONTINENT = {
@@ -66,20 +78,42 @@ def get_collaborative_recommendation(df, current_user_response):
     avg_team_comm = peers['team_communication'].astype(float).mean()
 
     advice = []
-    if current_user_response['team_customer_relationship'] <= avg_customer_rel:
+    if current_user_response['team_customer_relationship'] < avg_customer_rel:
         advice.append(f"Your team-customer relationship ({current_user_response['team_customer_relationship']}) "
                       f"is below peers ({avg_customer_rel:.2f}).")
-    else:
+    elif current_user_response['team_customer_relationship'] > avg_customer_rel:
         advice.append(f"Your team-customer relationship ({current_user_response['team_customer_relationship']}) "
                       f"is above peers ({avg_customer_rel:.2f}).")
+    else:
+        advice.append(
+            f"Your team-customer relationship ({current_user_response['team_customer_relationship']}) "
+            f"is equal to peers ({avg_customer_rel:.2f})."
+    )
 
-    if current_user_response['team_communication'] <= avg_team_comm:
+    if current_user_response['team_communication'] < avg_team_comm:
         advice.append(f"Your internal communication ({current_user_response['team_communication']}) "
                       f"is below peers ({avg_team_comm:.2f}).")
-    else:
+    elif current_user_response['team_customer_relationship'] > avg_customer_rel:
         advice.append(f"Your internal communication ({current_user_response['team_communication']}) "
                       f"is above peers ({avg_team_comm:.2f}).")
-
+    else:
+        advice.append(
+            f"Your team's communication with other teams ({current_user_response['team_communication']}) "
+            f"is equal to peers ({avg_customer_rel:.2f})."
+    )
+        
+    if current_user_response['communication_with_other_teams'] < avg_team_comm:
+        advice.append(f"Your team's communication with other teams ({current_user_response['communication_with_other_teams']}) "
+                      f"is below peers ({avg_team_comm:.2f}).")
+    elif current_user_response['communication_with_other_teams'] > avg_customer_rel:
+        advice.append(f"Your team's communication with other teams ({current_user_response['communication_with_other_teams']}) "
+                      f"is above peers ({avg_team_comm:.2f}).")
+    else:
+        advice.append(
+            f"Your team's communication with other teams ({current_user_response['communication_with_other_teams']}) "
+            f"is equal to peers ({avg_customer_rel:.2f})."
+    )
+#communication_with_other_teams
     return advice, peers
 
 # === Causal recommender ===
@@ -240,15 +274,15 @@ def results():
     # Sankey diagram
     sankey_html = None
     if causal_edges:
-        problems = list({p for p, t, e in causal_edges})
-        treatments = list({t for p, t, e in causal_edges})
-        labels = problems + treatments
+        edge_df = pd.DataFrame(causal_edges, columns=["problem", "treatment", "effect"])
+        edge_df = edge_df.groupby(["problem", "treatment"], as_index=False)["effect"].mean()
+        labels = list(set(edge_df["problem"].tolist() + edge_df["treatment"].tolist()))
         label_to_id = {label: i for i, label in enumerate(labels)}
 
-        sources = [label_to_id[p] for p, t, e in causal_edges]
-        targets = [label_to_id[t] for p, t, e in causal_edges]
-        values = [abs(e) * 100 for p, t, e in causal_edges]
-        colors = ["lightgreen" if e < 0 else "lightcoral" for p, t, e in causal_edges]
+        sources = [label_to_id[p] for p, t, e in edge_df.values]
+        targets = [label_to_id[t] for p, t, e in edge_df.values]
+        values  = [abs(e) * 100 for p, t, e in edge_df.values]
+        colors  = ["lightgreen" if e < 0 else "lightcoral" for p, t, e in edge_df.values]
 
         fig = go.Figure()
         fig.add_trace(go.Sankey(
@@ -261,6 +295,8 @@ def results():
         fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers',
                                  marker=dict(size=15, color="lightcoral"), name="Increase problem"))
         fig.update_layout(title_text="Causal Recommender Alluvial Diagram",
+                        xaxis=dict(visible=False),
+                        yaxis=dict(visible=False),
                           font=dict(size=12, color="black"),
                           margin=dict(r=200, t=50, b=50, l=50),
                           legend=dict(x=1.05, y=1, bgcolor="rgba(255,255,255,0.7)",
@@ -277,6 +313,7 @@ def results():
         plots=plots,
         peers=peers_df,
         sankey_html=sankey_html,
+        treatment_definitions=TREATMENT_DEFINITIONS,
         countries=sorted(global_df['country'].dropna().unique()) if not global_df.empty else [],
         industries=sorted(global_df['industry'].dropna().unique()) if not global_df.empty else [],
         roles=sorted(global_df['role'].dropna().unique()) if not global_df.empty else [],

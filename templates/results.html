@@ -12,20 +12,38 @@
 
     {% if sankey_html %}
     <div class="recommendation-box">
-      <h3>Causal Recommender Visualization</h3>
+      <h3>This visualization below shows the relationships between the requirements engineering problems you are facing
+and potential influencing factors (treatments). 
+Green links mean that improving a factor is associated with decreasingthe problem, 
+while red links mean it may increase the problem. In addition, the value on the diagram connecting the treatment to the problems show how strong the relationship.
+Use this view to understand which treatments have the strongest causal connections to the problems you are facing.</h3>
       {{ sankey_html | safe }}
     </div>
     {% endif %}
 
+    
+  {% if treatment_definitions %}
+  <div class="appendix-hover">
+    <span class="appendix-label">Appendix: Treatment Definitions (hover to view)</span>
+    <div class="appendix-content">
+      <ul>
+        {% for treatment, definition in treatment_definitions.items() %}
+        <li>
+          <strong>{{ treatment | capitalize }}:</strong> {{ definition }}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+
+
     {% if peers is not none and peers.shape[0] > 0 %}
     <div class="recommendation-box">
         <h3>Peer Company Benchmarking</h3>
-        <p>
-          Peer companies are defined as organizations in the 
-          <strong>same continent</strong>, operating in the 
-          <strong>same industry</strong>, and of 
-          <strong>similar team size</strong> (±25%).
-        </p>
+        <h3>This section benchmarks your answers against the average of peer companies, which are organizations in the same continent, 
+working in the same industry, and of a similar team size (±25%). 
+It highlights whether your team’s customer relationship, internal communication, communication with other teams are above or below the peer average. </h3>
         {% if statistics and statistics|length > 0 %}
         <ul class="recommendation-list">
             {% for stat in statistics %}
@@ -48,7 +66,9 @@
         <p>There are no statistics as peer companies are not available.</p>
     </div>
     {% endif %}
-
+ <h3>  The following visuals compare your answers with those of other respondents. 
+Your answers are highlighted in yellow.
+while other responses are shown in blue. You can use the filters for a more detailed view. </h3>  
     <form method="GET" class="filter-form">
       <h3>Filter Benchmark Visuals</h3>
       <label for="filter_country">Filter by Country:</label>
@@ -104,6 +124,7 @@
     {% if plots %}
     <div class="benchmarks">
       <h3>Benchmark Visuals</h3>
+  
       <div class="plot-grid">
         {% for name, plot_html in plots.items() %}
         <div class="plot-card">

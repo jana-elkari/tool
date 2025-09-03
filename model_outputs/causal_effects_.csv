@@ -1,0 +1,49 @@
+Problem,Treatment,EffectSize
+Communication flaws within the project team,communication inside team(very good/good/neutral/bad/very bad)(very good/good/neutral/bad/very bad),-0.1398
+Technically unfeasible requirements,communication inside team(very good/good/neutral/bad/very bad),0.1070
+Insufficient support by project lead,relationship between team and customer (very good/good/neutral/bad/very bad),-0.0801
+Internal or external constraints are not considered,communication inside team(very good/good/neutral/bad/very bad),0.0768
+Incomplete or hidden requirements,communication between your team and other teams (very good/good/neutral/bad/very bad),-0.0738
+Weak knowledge about customer's application domain,communication inside team(very good/good/neutral/bad/very bad),-0.0711
+Weak knowledge about customer's application domain,communication between your team and other teams (very good/good/neutral/bad/very bad),-0.0693
+Gold plating (implementation of features without clear value),relationship between team and customer (very good/good/neutral/bad/very bad),-0.0622
+Weak access to customer needs and / or (internal) stakeholders,relationship between team and customer (very good/good/neutral/bad/very bad),0.0597
+Targets are moving,relationship between team and customer (very good/good/neutral/bad/very bad),0.0590
+Weak access to customer needs and / or (internal) stakeholders,project methodology (agile/plan driven/hybrid...),0.0584
+We do not have enough time to carry out tasks,relationship between team and customer (very good/good/neutral/bad/very bad),-0.0578
+Inconsistent requirements,communication inside team(very good/good/neutral/bad/very bad),-0.0545
+Inconsistent requirements,relationship between team and customer (very good/good/neutral/bad/very bad),0.0545
+Gold plating (implementation of features without clear value),communication between your team and other teams (very good/good/neutral/bad/very bad),0.0525
+Weak knowledge about customer's application domain,Work location set up (from home/onsite/hybrid...),0.0519
+Changes in requirements not communicated,project methodology (agile/plan driven/hybrid...),-0.0509
+Internal or external constraints are not considered,relationship between team and customer (very good/good/neutral/bad/very bad),-0.0509
+Incomplete or hidden requirements,project methodology (agile/plan driven/hybrid...),-0.0504
+Communication flaws between the project and the customers,project methodology (agile/plan driven/hybrid...),-0.0497
+We do not have enough time to carry out tasks,communication between your team and other teams (very good/good/neutral/bad/very bad),0.0486
+Underspecified requirements that are too abstract,Work location set up (from home/onsite/hybrid...),0.0474
+No use of standard format for documenting requirements,communication between your team and other teams (very good/good/neutral/bad/very bad),0.0465
+Problems with terminology,relationship between team and customer (very good/good/neutral/bad/very bad),0.0452
+Incomplete or hidden requirements,Work location set up (from home/onsite/hybrid...),-0.0451
+Communication flaws within the project team,Work location set up (from home/onsite/hybrid...),-0.0436
+Weak knowledge about customer's application domainTeam Meetings frequency,-0.0424
+Communication flaws between the project and the customers,communication inside team(very good/good/neutral/bad/very bad),0.0418
+Weak access to customer needs and / or (internal) stakeholders,communication inside team(very good/good/neutral/bad/very bad),-0.0410
+Targets are moving Team Meetings frequency,-0.0409
+Weak knowledge about customer's application domain,project team distribution across locations,-0.1808
+Inconsistent requirements,project team distribution across locations,0.1470
+Requirements are not traceable,project team distribution across locations,0.1450
+Targets are moving,project team distribution across locations,-0.1409
+Insufficient support by project lead,project team distribution across locations,0.1340
+Communication flaws within the project team,Involvement of external partners in project,-0.1319
+Weak access to customer needs and / or (internal) stakeholders,Involvement of external partners in project,-0.1282
+Incomplete or hidden requirements,project team distribution across locations,0.1253
+Internal or external constraints are not considered,Involvement of external partners in project,0.1200
+Underspecified requirements that are too abstract,project team distribution across locations,-0.1134
+Lack of trust between our project team members,project team distribution across locations,-0.1113
+Communication channels used in our project are inefficient,Involvement of external partners in project,-0.0979
+Requirements are not traceable,Involvement of external partners in project,0.0955
+Communication flaws within the project team,project team distribution across locations,0.0789
+Internal or external constraints are not considered,project team distribution across locations,-0.0749
+Our team's responsibilities are unclear,Involvement of external partners in project,-0.0690
+Lack of communication between project team and customer,project team distribution across locations,0.0643
+Insufficient support by project lead,Involvement of external partners in project,0.0609
