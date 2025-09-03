@@ -76,6 +76,7 @@ def get_collaborative_recommendation(df, current_user_response):
 
     avg_customer_rel = peers['team_customer_relationship'].astype(float).mean()
     avg_team_comm = peers['team_communication'].astype(float).mean()
+    avg_team_to_team = peers['team_communication'].astype(float).mean()
 
     advice = []
     if current_user_response['team_customer_relationship'] < avg_customer_rel:
@@ -102,16 +103,16 @@ def get_collaborative_recommendation(df, current_user_response):
             f"is equal to peers ({avg_customer_rel:.2f})."
     )
         
-    if current_user_response['communication_with_other_teams'] < avg_team_comm:
+    if current_user_response['communication_with_other_teams'] < avg_team_to_team:
         advice.append(f"Your team's communication with other teams ({current_user_response['communication_with_other_teams']}) "
-                      f"is below peers ({avg_team_comm:.2f}).")
-    elif current_user_response['communication_with_other_teams'] > avg_customer_rel:
+                      f"is below peers ({avg_team_to_team:.2f}).")
+    elif current_user_response['communication_with_other_teams'] > avg_team_to_team:
         advice.append(f"Your team's communication with other teams ({current_user_response['communication_with_other_teams']}) "
-                      f"is above peers ({avg_team_comm:.2f}).")
+                      f"is above peers ({avg_team_to_team:.2f}).")
     else:
         advice.append(
             f"Your team's communication with other teams ({current_user_response['communication_with_other_teams']}) "
-            f"is equal to peers ({avg_customer_rel:.2f})."
+            f"is equal to peers ({avg_team_to_team:.2f})."
     )
 #communication_with_other_teams
     return advice, peers
