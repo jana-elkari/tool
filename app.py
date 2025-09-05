@@ -117,7 +117,6 @@ def get_collaborative_recommendation(df, current_user_response):
 #communication_with_other_teams
     return advice, peers
 
-# === Causal recommender ===
 def get_causal_recommendation(user_response, causal_df):
     if causal_df.empty:
         return None, None

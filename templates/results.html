@@ -14,9 +14,10 @@
     <div class="recommendation-box">
       <h3>This visualization below shows the relationships between the requirements engineering problems you are facing
 and potential influencing factors (treatments). 
-Green links mean that improving a factor is associated with decreasingthe problem, 
+Green links mean that improving a factor is associated with decreasing the problem, 
 while red links mean it may increase the problem. In addition, the value on the diagram connecting the treatment to the problems show how strong the relationship.
 Use this view to understand which treatments have the strongest causal connections to the problems you are facing.</h3>
+<h3>Output Example: Left side you will see a problem you selected (e.g. Inconsistent requirements) and on the right side, connected to it are treatments: (e.g. Improve communication inside team), and in green or red the type of relatioship between the problem and the treatment.</h3>
       {{ sankey_html | safe }}
     </div>
     {% endif %}
