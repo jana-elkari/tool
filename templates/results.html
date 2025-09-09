@@ -4,206 +4,252 @@
   <meta charset="UTF-8">
   <title>Results - RE Quick Check</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    /* Tabs */
+    .tab-buttons {
+      display: flex;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #ccc;
+    }
+    .tab-buttons button {
+      flex: 1;
+      padding: 10px;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      background: #f1f1f1;
+      font-weight: bold;
+    }
+    .tab-buttons button.active {
+      background: #ddd;
+      border-bottom: 2px solid #000;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
 </head>
 <body>
   <div class="container">
     <h2>Results</h2>
 
-    {% if sankey_html %}
-    <div class="recommendation-box">
-      <h3>This visualization below shows the relationships between the requirements engineering problems you are facing
+    <!-- ✅ Tab buttons -->
+    <div class="tab-buttons">
+      <button class="tab-link active" data-tab="tab1">Problem-Treatment Insights</button>
+      <button class="tab-link" data-tab="tab2">RE Benchmarking</button>
+    </div>
+
+    <!-- ✅ Tab 1 (Recommendations) -->
+    <div id="tab1" class="tab-content active">
+      {% if sankey_html %}
+        <h3>This visualization below shows the relationships between the requirements engineering problems you are facing
 and potential influencing factors (treatments). 
 Green links mean that improving a factor is associated with decreasing the problem, 
-while red links mean it may increase the problem. In addition, the value on the diagram connecting the treatment to the problems show how strong the relationship.
+while red links mean it may increase the problem. In addition, the value on the diagram connecting the treatment to the problems show how strong the relationship. These values range from -14 to 14, where 0 indicates no observable effect and positive values indicates a strong causal relationship and vice versa.
 Use this view to understand which treatments have the strongest causal connections to the problems you are facing.</h3>
-<h3>Output Example: Left side you will see a problem you selected (e.g. Inconsistent requirements) and on the right side, connected to it are treatments: (e.g. Improve communication inside team), and in green or red the type of relatioship between the problem and the treatment.</h3>
-      {{ sankey_html | safe }}
-    </div>
-    {% endif %}
+<h3>Output Example: Left side you will see a problem you selected (e.g. Inconsistent requirements) and on the right side, connected to it are treatments: (e.g. Improve communication inside team), and in green or red the type of relatioship between the problem and the treatment. If you hover, the numerical value you will get indicates the strength of the relationship.</h3>
+        {{ sankey_html | safe }}
+  
+      {% endif %}
 
-    
-  {% if treatment_definitions %}
-  <div class="appendix-hover">
-    <span class="appendix-label">Appendix: Treatment Definitions (hover to view)</span>
-    <div class="appendix-content">
-      <ul>
-        {% for treatment, definition in treatment_definitions.items() %}
-        <li>
-          <strong>{{ treatment | capitalize }}:</strong> {{ definition }}
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
-  {% endif %}
+      {% if treatment_definitions %}
+      <div class="appendix-hover">
+        <span class="appendix-label">Appendix: Treatment Definitions (hover to view)</span>
+        <div class="appendix-content">
+          <ul>
+            {% for treatment, definition in treatment_definitions.items() %}
+            <li>
+              <strong>{{ treatment | capitalize }}</strong>: {{ definition }}<br>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
 
-
-    {% if peers is not none and peers.shape[0] > 0 %}
-    <div class="recommendation-box">
-        <h3>Peer Company Benchmarking</h3>
-        <h3>This section benchmarks your answers against the average of peer companies, which are organizations in the same continent, 
+      {% if peers is not none and peers.shape[0] > 0 %}
+      <div class="recommendation-box">
+          <h3>Peer Company Benchmarking</h3>
+          <h3>This section benchmarks your answers against the average of peer companies, which are organizations in the same continent, 
 working in the same industry, and of a similar team size (±25%). 
 It highlights whether your team’s customer relationship, internal communication, communication with other teams are above or below the peer average. </h3>
-        {% if statistics and statistics|length > 0 %}
-        <ul class="recommendation-list">
-            {% for stat in statistics %}
-            {% if 'below' in stat %}
-                <li><span style="color:red;">✖</span> {{ stat }}</li>
-            {% elif 'above' in stat %}
-                <li><span style="color:green;">✔</span> {{ stat }}</li>
-            {% else %}
-                <li><span style="color:orange;">⚠</span> {{ stat }}</li>
-            {% endif %}
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p>No specific advice could be derived, but <strong>{{ peers.shape[0] }}</strong> peer companies were found.</p>
-        {% endif %}
+          {% if statistics and statistics|length > 0 %}
+          <ul class="recommendation-list">
+              {% for stat in statistics %}
+              {% if 'below' in stat %}
+                  <li><span style="color:red;">✖</span> {{ stat }}</li>
+              {% elif 'above' in stat %}
+                  <li><span style="color:green;">✔</span> {{ stat }}</li>
+              {% else %}
+                  <li><span style="color:orange;">⚠</span> {{ stat }}</li>
+              {% endif %}
+              {% endfor %}
+          </ul>
+          {% else %}
+          <p>No specific advice could be derived, but <strong>{{ peers.shape[0] }}</strong> peer companies were found.</p>
+          {% endif %}
+      </div>
+      {% else %}
+      <div class="recommendation-box">
+          <h3>Peer Company Benchmarking</h3>
+          <p>There are no statistics as peer companies are not available.</p>
+      </div>
+      {% endif %}
     </div>
-    {% else %}
-    <div class="recommendation-box">
-        <h3>Peer Company Benchmarking</h3>
-        <p>There are no statistics as peer companies are not available.</p>
-    </div>
-    {% endif %}
- <h3>  The following visuals compare your answers with those of other respondents. 
+
+    <!-- ✅ Tab 2 (Benchmark Visuals) -->
+    <div id="tab2" class="tab-content">
+      <h3>  The following visuals compare your answers with those of other respondents. 
 Your answers are highlighted in yellow.
 while other responses are shown in blue. You can use the filters for a more detailed view. </h3>  
-    <form method="GET" class="filter-form">
-      <h3>Filter Benchmark Visuals</h3>
-      <label for="filter_country">Filter by Country:</label>
-      <select name="filter_country">
-        <option value="">All</option>
-        {% for country in countries %}
-          <option value="{{ country }}" {% if filter_country == country %}selected{% endif %}>{{ country }}</option>
-        {% endfor %}
-      </select>
 
-      <label for="filter_industry">Filter by Industry:</label>
-      <select name="filter_industry">
-        <option value="">All</option>
-        {% for ind in industries %}
-          <option value="{{ ind }}" {% if filter_industry == ind %}selected{% endif %}>{{ ind }}</option>
-        {% endfor %}
-      </select>
+      <form method="GET" class="filter-form">
+        <h3>Filter Benchmark Visuals</h3>
+        <label for="filter_country">Filter by Country:</label>
+        <select name="filter_country">
+          <option value="">All</option>
+          {% for country in countries %}
+            <option value="{{ country }}" {% if filter_country == country %}selected{% endif %}>{{ country }}</option>
+          {% endfor %}
+        </select>
 
-      <label for="filter_role">Filter by Role:</label>
-      <select name="filter_role">
-        <option value="">All</option>
-        {% for role in roles %}
-          <option value="{{ role }}" {% if filter_role == role %}selected{% endif %}>{{ role }}</option>
-        {% endfor %}
-      </select>
+        <label for="filter_industry">Filter by Industry:</label>
+        <select name="filter_industry">
+          <option value="">All</option>
+          {% for ind in industries %}
+            <option value="{{ ind }}" {% if filter_industry == ind %}selected{% endif %}>{{ ind }}</option>
+          {% endfor %}
+        </select>
 
-      <label for="filter_method">Filter by Project Method:</label>
-      <select name="filter_method">
-        <option value="">All</option>
-        {% for method in methods %}
-          <option value="{{ method }}" {% if filter_method == method %}selected{% endif %}>{{ method }}</option>
-        {% endfor %}
-      </select>
+        <label for="filter_role">Filter by Role:</label>
+        <select name="filter_role">
+          <option value="">All</option>
+          {% for role in roles %}
+            <option value="{{ role }}" {% if filter_role == role %}selected{% endif %}>{{ role }}</option>
+          {% endfor %}
+        </select>
 
-      <label for="filter_partners">Filter by External Partners:</label>
-      <select name="filter_partners">
-        <option value="">All</option>
-        {% for p in partners %}
-          <option value="{{ p }}" {% if filter_partners == p %}selected{% endif %}>{{ p }}</option>
-        {% endfor %}
-      </select>
+        <label for="filter_method">Filter by Project Method:</label>
+        <select name="filter_method">
+          <option value="">All</option>
+          {% for method in methods %}
+            <option value="{{ method }}" {% if filter_method == method %}selected{% endif %}>{{ method }}</option>
+          {% endfor %}
+        </select>
 
-      <label for="filter_distribution">Filter by Project Distribution:</label>
-      <select name="filter_distribution">
-        <option value="">All</option>
-        {% for d in distributions %}
-          <option value="{{ d }}" {% if filter_distribution == d %}selected{% endif %}>{{ d }}</option>
-        {% endfor %}
-      </select>
-      <button type="submit">Apply Filters</button>
-    </form>
+        <label for="filter_partners">Filter by External Partners:</label>
+        <select name="filter_partners">
+          <option value="">All</option>
+          {% for p in partners %}
+            <option value="{{ p }}" {% if filter_partners == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
 
-    {% if plots %}
-    <div class="benchmarks">
-      <h3>Benchmark Visuals</h3>
-  
-      <div class="plot-grid">
-        {% for name, plot_html in plots.items() %}
-        <div class="plot-card">
-          {% if name == "team_size" %}
-            <p><strong>How many people are involved in your project?</strong></p>
-          {% elif name == "role" %}
-            <p><strong>What is the main role you occupy in your project?</strong></p>
-          {% elif name == "industry" %}
-            <p><strong>Please select the main industrial sector of your project or the application domain of the software you build.</strong></p>
-          {% elif name == "team_customer_relationship" %}
-            <p><strong>How would you rate the relationship between your project’s team and its customer? (1–5)</strong></p>
-          {% elif name == "external_partners" %}
-            <p><strong>Does your project involve external partners?</strong></p>
-          {% elif name == "failed_documentation" %}
-            <p><strong>Have you ever failed to document one or more requirements?</strong></p>
-          {% elif name == "project_distribution" %}
-            <p><strong>Is your project distributed?</strong></p>
-          {% elif name == "work" %}
-            <p><strong>Do you tend to work from home, on-site, or both?</strong></p>
-          {% elif name == "requirements_elicitation" %}
-            <p><strong>How are the requirements elicited in your project?</strong></p>
-          {% elif name == "elicitation_techniques" %}
-            <p><strong>Which techniques do you use for requirements elicitation? (Select all that apply)</strong></p>
-          {% elif name == "explicit_distinction" %}
-            <p><strong>Which aspects do you explicitly distinguish when specifying requirements? (Select all that apply)</strong></p>
-          {% elif name == "team_communication" %}
-            <p><strong>How would you rate the quality of communication inside your team?</strong></p>
-          {% elif name == "project_method" %}
-            <p><strong>How would you personally characterise the way your project works?</strong></p>
-          {% elif name == "country" %}
-            <p><strong>In which country are you personally located?</strong></p>
-          {% elif name == "common_problem" %}
-            <p><strong>Top 1 Problem (most critical)</strong></p>
-          {% elif name == "user_feedback_frequency" %}
-            <p><strong>How often is user feedback provided?</strong></p>
-          {% elif name == "non_functional_requirements" %}
-            <p><strong>Which classes of non-functional requirements do you explicitly consider in your requirements documentation?</strong></p>
-          {% elif name == "meeting_frequency" %}
-            <p><strong>How often do members of your team meet, informally by chance meeting or in announced meetings?</strong></p>
-          {% elif name == "doc_willing" %}
-            <p><strong>I produce the document willingly because I know it's essential.</strong></p>
-          {% elif name == "communication_with_other_teams" %}
-            <p><strong>How would you rate the quality of communication between your team and other teams on the same project?</strong></p>
-          {% elif name == "doc_unwilling_but_produce" %}
-            <p><strong>I produce the document unwillingly but still produce it.</strong></p>
-          {% elif name == "doc_dont_produce" %}
-            <p><strong>I don't produce the document, because the current members of the project do not need it.</strong></p>
-          {% elif name == "requirements_testing_alignment" %}
-            <p><strong>How do you align software testing with requirements?</strong></p>
-          {% elif name == "assumption" %}
-            <p><strong>If you are in a situation where you lack information and have to make an assumption to proceed in your project, what do you typically do?</strong></p>
-          {% elif name == "requirements_documentation" %}
-            <p><strong>How do you document requirements?</strong></p>
-          {% elif name == "no_documentation_reasons" %}
-            <p><strong>Check as many reasons for failing to document requirements that have applied in at least one circumstance.</strong></p>
-          {% elif name == "top2" %}
-            <p><strong>Top 2 Problem (most critical)</strong></p>
-          {% elif name == "top3" %}
-            <p><strong>Top 3 Problem (most critical)</strong></p>
-          {% elif name == "top4" %}
-            <p><strong>Top 4 Problem (most critical)</strong></p>
-          {% elif name == "top5" %}
-            <p><strong>Top 5 Problem (most critical)</strong></p>
-          {% else %}
-            <p><strong>{{ name.replace('_',' ').title() }}</strong></p>
-          {% endif %}
+        <label for="filter_distribution">Filter by Project Distribution:</label>
+        <select name="filter_distribution">
+          <option value="">All</option>
+          {% for d in distributions %}
+            <option value="{{ d }}" {% if filter_distribution == d %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit">Apply Filters</button>
+      </form>
 
-          <!-- ✅ Insert Plotly plot -->
-          <div class="plotly-plot">
-            {{ plot_html | safe }}
+      {% if plots %}
+      <div class="benchmarks">
+        <h3>Benchmark Visuals</h3>
+        <div class="plot-grid">
+          {% for name, plot_html in plots.items() %}
+          <div class="plot-card">
+            {% if name == "team_size" %}
+              <p><strong>How many people are involved in your project?</strong></p>
+            {% elif name == "role" %}
+              <p><strong>What is the main role you occupy in your project?</strong></p>
+            {% elif name == "industry" %}
+              <p><strong>Please select the main industrial sector of your project or the application domain of the software you build.</strong></p>
+            {% elif name == "team_customer_relationship" %}
+              <p><strong>How would you rate the relationship between your project’s team and its customer? (1–5)</strong></p>
+            {% elif name == "external_partners" %}
+              <p><strong>Does your project involve external partners?</strong></p>
+            {% elif name == "failed_documentation" %}
+              <p><strong>Have you ever failed to document one or more requirements?</strong></p>
+            {% elif name == "project_distribution" %}
+              <p><strong>Is your project distributed?</strong></p>
+            {% elif name == "work" %}
+              <p><strong>Do you tend to work from home, on-site, or both?</strong></p>
+            {% elif name == "requirements_elicitation" %}
+              <p><strong>How are the requirements elicited in your project?</strong></p>
+            {% elif name == "elicitation_techniques" %}
+              <p><strong>Which techniques do you use for requirements elicitation? (Select all that apply)</strong></p>
+            {% elif name == "explicit_distinction" %}
+              <p><strong>Which aspects do you explicitly distinguish when specifying requirements? (Select all that apply)</strong></p>
+            {% elif name == "team_communication" %}
+              <p><strong>How would you rate the quality of communication inside your team?</strong></p>
+            {% elif name == "project_method" %}
+              <p><strong>How would you personally characterise the way your project works?</strong></p>
+            {% elif name == "country" %}
+              <p><strong>In which country are you personally located?</strong></p>
+            {% elif name == "common_problem" %}
+              <p><strong>Top 1 Problem (most critical)</strong></p>
+            {% elif name == "user_feedback_frequency" %}
+              <p><strong>How often is user feedback provided?</strong></p>
+            {% elif name == "non_functional_requirements" %}
+              <p><strong>Which classes of non-functional requirements do you explicitly consider in your requirements documentation?</strong></p>
+            {% elif name == "meeting_frequency" %}
+              <p><strong>How often do members of your team meet, informally by chance meeting or in announced meetings?</strong></p>
+            {% elif name == "doc_willing" %}
+              <p><strong>I produce the document willingly because I know it's essential.</strong></p>
+            {% elif name == "communication_with_other_teams" %}
+              <p><strong>How would you rate the quality of communication between your team and other teams on the same project?</strong></p>
+            {% elif name == "doc_unwilling_but_produce" %}
+              <p><strong>I produce the document unwillingly but still produce it.</strong></p>
+            {% elif name == "doc_dont_produce" %}
+              <p><strong>I don't produce the document, because the current members of the project do not need it.</strong></p>
+            {% elif name == "requirements_testing_alignment" %}
+              <p><strong>How do you align software testing with requirements?</strong></p>
+            {% elif name == "assumption" %}
+              <p><strong>If you are in a situation where you lack information and have to make an assumption to proceed in your project, what do you typically do?</strong></p>
+            {% elif name == "requirements_documentation" %}
+              <p><strong>How do you document requirements?</strong></p>
+            {% elif name == "no_documentation_reasons" %}
+              <p><strong>Check as many reasons for failing to document requirements that have applied in at least one circumstance.</strong></p>
+            {% elif name == "top2" %}
+              <p><strong>Top 2 Problem (most critical)</strong></p>
+            {% elif name == "top3" %}
+              <p><strong>Top 3 Problem (most critical)</strong></p>
+            {% elif name == "top4" %}
+              <p><strong>Top 4 Problem (most critical)</strong></p>
+            {% elif name == "top5" %}
+              <p><strong>Top 5 Problem (most critical)</strong></p>
+            {% else %}
+              <p><strong>{{ name.replace('_',' ').title() }}</strong></p>
+            {% endif %}
+            <div class="plotly-plot">
+              {{ plot_html | safe }}
+            </div>
           </div>
+          {% endfor %}
         </div>
-        {% endfor %}
       </div>
+      {% endif %}
     </div>
-    {% endif %}
 
     <a href="{{ url_for('survey') }}" class="btn">🔄 Resubmit Answers</a>
   </div>
+
+  <script>
+    // ✅ Simple tab switching
+    document.querySelectorAll(".tab-link").forEach(button => {
+      button.addEventListener("click", () => {
+        const tabId = button.dataset.tab;
+
+        document.querySelectorAll(".tab-link").forEach(btn => btn.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+
+        button.classList.add("active");
+        document.getElementById(tabId).classList.add("active");
+      });
+    });
+  </script>
 </body>
 </html>

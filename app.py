@@ -94,13 +94,13 @@ def get_collaborative_recommendation(df, current_user_response):
     if current_user_response['team_communication'] < avg_team_comm:
         advice.append(f"Your internal communication ({current_user_response['team_communication']}) "
                       f"is below peers ({avg_team_comm:.2f}).")
-    elif current_user_response['team_customer_relationship'] > avg_customer_rel:
+    elif current_user_response['team_communication'] > avg_team_comm:
         advice.append(f"Your internal communication ({current_user_response['team_communication']}) "
                       f"is above peers ({avg_team_comm:.2f}).")
     else:
         advice.append(
-            f"Your team's communication with other teams ({current_user_response['team_communication']}) "
-            f"is equal to peers ({avg_customer_rel:.2f})."
+            f"Your internal communication ({current_user_response['team_communication']}) "
+            f"is equal to peers ({avg_team_comm:.2f})."
     )
         
     if current_user_response['communication_with_other_teams'] < avg_team_to_team:

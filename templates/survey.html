@@ -24,6 +24,48 @@
     </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const selects = [
+        document.querySelector("select[name='common_problem']"),
+        document.querySelector("select[name='top2']"),
+        document.querySelector("select[name='top3']"),
+        document.querySelector("select[name='top4']"),
+        document.querySelector("select[name='top5']")
+    ];
+
+    function updateOptions() {
+        // Collect chosen values
+        const chosen = new Set(selects.map(s => s.value));
+
+        // Reset all options first
+        selects.forEach(select => {
+            Array.from(select.options).forEach(opt => {
+                opt.disabled = false;
+                opt.style.color = "black";
+            });
+        });
+
+        // Disable duplicates across dropdowns
+        selects.forEach(select => {
+            Array.from(select.options).forEach(opt => {
+                if (opt.value && chosen.has(opt.value) && select.value !== opt.value) {
+                    opt.disabled = true;
+                    opt.style.color = "lightgray"; // visual feedback
+                }
+            });
+        });
+    }
+
+    // Attach change listener
+    selects.forEach(select => {
+        select.addEventListener("change", updateOptions);
+    });
+
+    updateOptions(); // run on load
+});
+</script>
+
 <body>
 
 
@@ -348,6 +390,7 @@ Rate the following based on what best describes your behavior and thinking:
 
             <label><b>Please select the most critical problems that have occurred in your projects.</b></label>
             <select name="common_problem" required>
+                    <option value="" disabled selected> Pick problem </option>
                 <option value="Communication flaws within the project team">Communication flaws within the project team</option>
                 <option value="Technically unfeasible requirements">Technically unfeasible requirements</option>
                 <option value="Insufficient support by project lead">Insufficient support by project lead</option>
@@ -368,6 +411,7 @@ Rate the following based on what best describes your behavior and thinking:
 
             <label>Top 2 Problem (most critical)</label>
 <select name="top2" required>
+    <option value="" disabled selected> Pick problem </option>
     <option value="Communication flaws within the project team">Communication flaws within the project team</option>
     <option value="Technically unfeasible requirements">Technically unfeasible requirements</option>
     <option value="Insufficient support by project lead">Insufficient support by project lead</option>
@@ -388,6 +432,7 @@ Rate the following based on what best describes your behavior and thinking:
 
     <label>Top 3 Problem (most critical)</label>
 <select name="top3" required>
+    <option value="" disabled selected> Pick problem </option>
     <option value="Communication flaws within the project team">Communication flaws within the project team</option>
     <option value="Technically unfeasible requirements">Technically unfeasible requirements</option>
     <option value="Insufficient support by project lead">Insufficient support by project lead</option>
@@ -408,6 +453,7 @@ Rate the following based on what best describes your behavior and thinking:
 
   <label>Top 4 Problem (most critical)</label>
 <select name="top4" required>
+    <option value="" disabled selected> Pick problem </option>
     <option value="Communication flaws within the project team">Communication flaws within the project team</option>
     <option value="Technically unfeasible requirements">Technically unfeasible requirements</option>
     <option value="Insufficient support by project lead">Insufficient support by project lead</option>
@@ -429,6 +475,7 @@ Rate the following based on what best describes your behavior and thinking:
 
   <label>Top 5 Problem (most critical)</label>
 <select name="top5" required>
+    <option value="" disabled selected> Pick problem </option>
     <option value="Communication flaws within the project team">Communication flaws within the project team</option>
     <option value="Technically unfeasible requirements">Technically unfeasible requirements</option>
     <option value="Insufficient support by project lead">Insufficient support by project lead</option>
