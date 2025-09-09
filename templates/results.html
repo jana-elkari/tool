@@ -42,12 +42,19 @@
     <!-- ✅ Tab 1 (Recommendations) -->
     <div id="tab1" class="tab-content active">
       {% if sankey_html %}
-        <h3>This visualization below shows the relationships between the requirements engineering problems you are facing
-and potential influencing factors (treatments). 
-Green links mean that improving a factor is associated with decreasing the problem, 
-while red links mean it may increase the problem. In addition, the value on the diagram connecting the treatment to the problems show how strong the relationship. These values range from -14 to 14, where 0 indicates no observable effect and positive values indicates a strong causal relationship and vice versa.
-Use this view to understand which treatments have the strongest causal connections to the problems you are facing.</h3>
-<h3>Output Example: Left side you will see a problem you selected (e.g. Inconsistent requirements) and on the right side, connected to it are treatments: (e.g. Improve communication inside team), and in green or red the type of relatioship between the problem and the treatment. If you hover, the numerical value you will get indicates the strength of the relationship.</h3>
+        <h3>This visualization below shows the relationships between the requirements engineering problems you are facing (right)
+and potential influencing factors or treatments (left). The color and thickness of each link indicate whether a treatment increases or decreases a problem, and by how much.
+
+<ul>
+  <li><strong>Colors</strong> = Represent positve or negative relation. Check label on diagram.</li>
+  <li><strong>Thickness</strong> = strength of the relationship (thicker means stronger)</li>
+  <li><strong>Numerical Values (on hover) </strong>  = Strength of relationship</li>
+</ul>
+
+
+
+</h3>
+<h3>Output Example: Right side you will see a problem you selected (e.g. Inconsistent requirements) and on the left side, connected to it are treatments: (e.g. Improve communication inside team), and in green or red the type of relatioship between the problem and the treatment. If you hover, the numerical value you will get indicates the strength of the relationship.</h3>
         {{ sankey_html | safe }}
   
       {% endif %}

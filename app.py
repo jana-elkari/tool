@@ -279,8 +279,8 @@ def results():
         labels = list(set(edge_df["problem"].tolist() + edge_df["treatment"].tolist()))
         label_to_id = {label: i for i, label in enumerate(labels)}
 
-        sources = [label_to_id[p] for p, t, e in edge_df.values]
-        targets = [label_to_id[t] for p, t, e in edge_df.values]
+        sources = [label_to_id[t] for p, t, e in edge_df.values]
+        targets = [label_to_id[p] for p, t, e in edge_df.values]
         values  = [abs(e) * 100 for p, t, e in edge_df.values]
         colors  = ["lightgreen" if e < 0 else "lightcoral" for p, t, e in edge_df.values]
 

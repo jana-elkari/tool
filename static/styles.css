@@ -34,6 +34,14 @@ h2 {
     font-size: 15px;
 }
 
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;   /* wrap to next line if too long */
+  gap: 15px;         /* space between filters */
+  align-items: center;
+}
+
+
 .survey-form button {
     padding: 12px;
     background-color: #005b96;
@@ -81,10 +89,10 @@ h2 {
 }
 
 .appendix-hover .appendix-content {
-  display: none;           /* <-- important: keep hidden initially */
+  display: none;           
   width: 400px;
   background: #f9f9f9;
-  color: #333;
+  color: #333;              /* default color for definitions */
   text-align: left;
   padding: 15px;
   border-radius: 8px;
@@ -97,5 +105,16 @@ h2 {
 }
 
 .appendix-hover:hover .appendix-content {
-  display: block;           /* <-- only show on hover */
+  display: block;           
+}
+
+/* 🎯 Treatment name only */
+.appendix-hover .appendix-content strong {
+  color: #005b96;   /* blue for treatment */
+  font-weight: bold;
+}
+
+/* 🎯 Definition text */
+.appendix-hover .appendix-content li {
+  color: #333;      /* keep gray for definitions */
 }
