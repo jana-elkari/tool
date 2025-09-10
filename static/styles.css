@@ -35,10 +35,21 @@ h2 {
 }
 
 .filter-form {
-  display: flex;
+  display: block;
   flex-wrap: wrap;   /* wrap to next line if too long */
-  gap: 15px;         /* space between filters */
+  gap: 10px;         /* space between filters */
   align-items: center;
+}
+
+.filter-form label {
+  display: block;     /* each label on its own line */
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.filter-form select {
+  margin-bottom: 6px;
+  padding: 4px;
 }
 
 
